@@ -1,5 +1,3 @@
-# ft_irc
-
 # IRC - Internet Relay Chat
 
 The IRC protocol is a text-based protocol, with the simplest client being any socket program capable of connecting to the server.
@@ -12,22 +10,26 @@ https://mbrunel.github.io/ft_irc/index.html
 
 RFCs
 
-- RFC1459: "Internet Relay Chat Protocol" - Updated by RFC2812
-- RFC2810: "IRC: Architecture"
-- RFC2811: "IRC: Channel Management"
-- RFC2812: "IRC: Client Protocol"
-- RFC2813: "IRC: Server Protocol"
+- [RFC1459: "Internet Relay Chat Protocol"](https://www.rfc-editor.org/rfc/rfc1459) - Updated by RFC2812
+- [RFC2810: "IRC: Architecture"](https://www.rfc-editor.org/rfc/rfc2810)
+- [RFC2811: "IRC: Channel Management"](https://www.rfc-editor.org/rfc/rfc2811)
+- [RFC2812: "IRC: Client Protocol"](https://www.rfc-editor.org/rfc/rfc2812)
+- [RFC2813: "IRC: Server Protocol"](https://www.rfc-editor.org/rfc/rfc2813)
 
 [tutorial](https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9)
 
-[project](https://github.com/AhmedFatir/ft_irc)
+[Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/)
+
+[Beej's Guide to Network Concepts](https://beej.us/guide/bgnet0/html/#project-multiuser-chat-client-and-server)
+
+[ref project](https://github.com/AhmedFatir/ft_irc)
 
 [IRC Cheatsheet 1](https://gist.github.com/xero/2d6e4b061b4ecbeb9f99)  
 [IRC Cheatsheet 2](https://www.cheat-sheets.org/saved-copy/wikiHow_IRC_Cheat_Sheet.pdf)
 
 ## RFC1459
 
-A client is distinguished from other clients by a unique nickname having a maximum length of nine (9) characters.
+A client is distinguished from other clients by a unique nickname having a **maximum length of nine (9) characters**.
 
 In addition to the **nickname**, all servers must have the following information about all clients: the **real name of the host** that the client is running on, the **username** of the client on that host, and the **server** to which the client is connected.
 
@@ -289,6 +291,101 @@ NOTE:
      It is possible to extend the KICK command parameters to the following:
 		`\<channel>{,\<channel>} \<user>{,\<user>} [\<comment>]`
 
+### Sending messages
+
+
+The main purpose of the IRC protocol is to provide a base for clients to communicate with each other. **PRIVMSG** and **NOTICE** are the only messages available which actually perform delivery of a text message from one client to another - the rest just make it possible and try to ensure it happens in a reliable and structured manner.
+
+#### Private messages
+
+Command: PRIVMSG
+Parameters: \<receiver>{,\<receiver>} \<text to be sent>
+
+PRIVMSG is used to send private messages between users.  \<receiver> is the nickname of the receiver of the message.  \<receiver> can also be a list of names or channels separated with commas.
+
+Numeric Replies:
+
+ERR_NORECIPIENT
+ERR_CANNOTSENDTOCHAN
+ERR_WILDTOPLEVEL
+ERR_NOSUCHNICK
+RPL_AWAY
+ERR_NOTEXTTOSEND
+ERR_NOTOPLEVEL
+ERR_TOOMANYTARGETS
+
+#### Notice
+
+Command: NOTICE
+Parameters: \<nickname> \<text>
+
+The NOTICE message is used similarly to PRIVMSG.  The difference between NOTICE and PRIVMSG is that automatic replies must never be sent in response to a NOTICE message. This rule applies to servers too - they must not send any error reply back to the client on receipt of a notice.
+
+### Command Parsing
+
+To provide useful ’non-buffered’ network IO for clients and servers, each connection is given its own private ’input buffer’ in which the results of the most recent read and parsing are kept.  A buffer size of **512** bytes is used so as to hold 1 full message, although, this will usually hold several commands.  The private buffer is parsed after every read operation for valid messages.  When dealing with multiple messages from one client in the buffer, care should be taken in case one happens to cause the client to be ’removed’.
+
+### Tracking nickname changes
+
+All IRC servers are required to keep a history of recent nickname changes.  This is required to allow the server to have a chance of keeping in touch of things when nick-change race conditions occur with commands which manipulate them.  Commands which must trace nick changes are:
+-	KILL (the nick being killed)
+-	MODE (+/- o,v)
+-	KICK (the nick being kicked)
+
+No other commands are to have nick changes checked for.
+
+### Operators
+
+Storage of oper passwords in configuration files is preferable to hard coding them in and should be stored in a crypted format (ie using **crypt**(3) from Unix) to prevent easy theft.
+
+## RFC2811
+
+### Namespace
+
+Channels names are strings (beginning with a ’**&**’, ’**#**’, ’**+**’ or ’**!**’character) of **length up to fifty (50) characters**.  Channel names are **case insensitive**.
+
+The use of different prefixes effectively creates four (4) distinct namespaces for channel names.  This is important because of the protocol limitations regarding namespaces (in general).
+
+### Channel Scope
+
+Channels with ’&’ as prefix are local to the server where they are created.
+
+### Channel Properties
+
+Channels with ’+’ as prefix do not support channel modes.
+
+### Channel Operators
+
+Since channels starting with the character ’+’ as prefix do not support channel modes, no member can therefore have the status of channel operator.
+
+### Channel lifetime
+
+In regard to the lifetime of a channel, there are typically two groups of channels: standard channels which prefix is either ’&’, ’#’ or ’+’, and "safe channels" which prefix is ’!’.
+
+#### Standard channels
+
+These channels are created implicitly when the first user joins it, and cease to exist when the last user leaves it.  While the channel exists, any client can reference the channel using the name of the channel.
+
+#### Safe channels
+
+Unlike other channels, "safe channels" are not implicitly created.  A user wishing to create such a channel MUST request the creation by sending a special JOIN command to the server in which the channel identifier (then unknown) is replaced by the character ’!’.  The creation process for this type of channel is strictly controlled. The user only chooses part of the channel name (known as the channel "short name"), the server automatically prepends the user provided name with a channel identifier consisting of five (5) characters. The channel name resulting from the combination of these two elements is unique, making the channel safe from abuses based on network splits.
+
+In this case, channel names do not become unavailable: these channels may continue to exist after the last user left. Only the user creating the channel becomes "channel creator", users joining anexisting empty channel do not automatically become "channel creator" nor "channel operator".
+
+### Channel Flags
+
+#### User limit
+
+A user limit may be set on channels by using the channel flag ’l’. When the limit is reached, servers MUST forbid their local users to join the channel.
+
+The value of the limit MUST only be made available to the channel members in the reply sent by the server to a MODE query.
+
+#### Channel Key
+
+When a channel key is set (by using the mode ’k’), servers MUST reject their local users request to join the channel unless this key is given.
+
+The channel key MUST only be made visible to the channel members in the reply sent by the server to a MODE query.
+
 ## IRC client -> [WeeChat](https://weechat.org/files/doc/weechat/stable/weechat_quickstart.en.html)
 
 ### Basic commands
@@ -332,6 +429,22 @@ The **realname** supplied with USER is used to populate the real name field that
 `/topic <channel> [<topic>]` - The topic for channel &lt;channel&gt; is returned if there is no &lt;topic&gt; given. If the &lt;topic&gt; parameter is present, the topic for that channel will be changed, if the channel modes permit this action.  
 `/mode <channel> {[+|-]|i|t|k|o|l} [<user>]` - The user MODEs are typically changes which affect either how the client is seen by others or what 'extra' messages the client is sent.
 
+### RFC2813
+
+#### Connection ´Liveness´
+
+To detect when a connection has died or become unresponsive, the server MUST **poll** each of its connections.
+
+If a connection doesn’t respond in time, its connection is closed using the appropriate procedures.
+
+#### Users
+
+When a server successfully registers a new user connection, it is REQUIRED to send to the user unambiguous messages stating: the user identifiers upon which it was registered (**RPL_WELCOME**), the server name and version (**RPL_YOURHOST**), the server birth information (**RPL_CREATED**), available user and channel modes (**RPL_MYINFO**), and it MAY send any introductory messages which may be deemed appropriate.
+
+In particular the server SHALL send the current user/service/server count (as per the LUSER reply) and finally the MOTD (if any, as per the MOTD reply).
+
+
+
 ## Connecting WeeChat to localhost (using nc)
 
 PASS \[password\]
@@ -339,7 +452,9 @@ CAP LS 302
 NICK \[irc.server.\[server name\].nicks\]
 USER \[irc.server.\[server name\].nicks\] 0 \* :\[irc.server.\[server name\].realname\]
 
-## Sockets
+## Functions
+
+### Socket
 
 **socket** - create an endpoint for communication and returns a descriptor.
 
