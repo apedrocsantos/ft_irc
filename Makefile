@@ -30,7 +30,7 @@ IWhite='\033[0;97m'       # White
 MSG1 = @echo ${IGreen}"Compiled Successfully ✔︎"${Color_Off}
 MSG2 = @echo ${IYellow}"Cleaned Successfully ✔︎"${Color_Off}
 MSG3 = @echo ${ICyan}"Cleaned ${NAME} Successfully ✔︎"${Color_Off}
-HOWTO = @echo ${IRed}"To run the program do: ./${NAME}"${Color_Off}
+HOWTO = @echo ${IRed}"To run the program do: ./${NAME} <PORT> <PASSWORD>"${Color_Off}
 
 CTRL_L = clear -x # This is the same as CTRL + L cleaning the terminal without deleting everything just pussing up
 
