@@ -27,6 +27,8 @@ RFCs
 [IRC Cheatsheet 1](https://gist.github.com/xero/2d6e4b061b4ecbeb9f99)  
 [IRC Cheatsheet 2](https://www.cheat-sheets.org/saved-copy/wikiHow_IRC_Cheat_Sheet.pdf)
 
+[The Linux socket API explained](https://www.youtube.com/watch?v=XXfdzwEsxFk)
+
 ## RFC1459
 
 A client is distinguished from other clients by a unique nickname having a **maximum length of nine (9) characters**.
@@ -91,7 +93,7 @@ It is possible to send multiple PASS commands before registering but only the la
 
 Numeric Replies:
 -	ERR_NEEDMOREPARAMS
--	ERR_ALREADTREGISTERED
+-	ERR_ALREADYREGISTRED
 
 #### Nick message
 
@@ -138,7 +140,7 @@ Numeric Replies:
 -	ERR_NEEDMOREPARAMS
 -	ERR_NOOPERHOST
 -	RPLY_YOUREOPER
--	ERR_PASSWDMISMATH
+-	ERR_PASSWDMISMATCH
 
 #### Quit
 
@@ -194,6 +196,8 @@ The MODE command is a dual-purpose command in IRC.  It allows both usernames and
 
 #### Channel modes
 
+The MODE command is provided so that users may query and change the characteristics of a channel. Note that there is a maximum limit of three (3) changes per command for modes that take a parameter.
+
 Parameters: \<channel> {[+|-]|i|t|k|o|l} [\<limit>] [\<user>] [\<ban mask>]
 
 -	i - invite-only channel flag;
@@ -203,6 +207,23 @@ Parameters: \<channel> {[+|-]|i|t|k|o|l} [\<limit>] [\<user>] [\<ban mask>]
 -	l - set the user limit to channel;
 
 When using the ’o’ and ’b’ options, a restriction on a total of three per mode command has been imposed.
+
+Numeric Replies:
+
+ERR_NEEDMOREPARAMS
+ERR_NOCHANMODES
+ERR_USERNOTINCHANNEL
+RPL_CHANNELMODEIS
+RPL_BANLIST
+RPL_EXCEPTLIST
+RPL_INVITELIST
+RPL_UNIQOPIS
+ERR_KEYSET
+ERR_CHANOPRIVSNEEDED
+ERR_UNKNOWNMODE
+RPL_ENDOFBANLIST
+RPL_ENDOFEXCEPTLIST
+RPL_ENDOFINVITELIST
 
 #### User modes
 
