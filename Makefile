@@ -6,7 +6,7 @@ CXX = @c++
 
 CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98
 
-SRC = main.cpp
+SRC = main.cpp checks.cpp server.cpp
 
 SRCS = $(addprefix src/, $(SRC))
 
