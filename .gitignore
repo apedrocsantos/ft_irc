@@ -1,2 +1,4 @@
 ircserv.dSYM
 .DS_Store
+./ircserv
+obj/
