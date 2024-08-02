@@ -407,6 +407,21 @@ When a channel key is set (by using the mode ’k’), servers MUST reject their
 
 The channel key MUST only be made visible to the channel members in the reply sent by the server to a MODE query.
 
+### RFC2813
+
+#### Connection ´Liveness´
+
+To detect when a connection has died or become unresponsive, the server MUST **poll** each of its connections.
+
+If a connection doesn’t respond in time, its connection is closed using the appropriate procedures.
+
+#### Users
+
+When a server successfully registers a new user connection, it is REQUIRED to send to the user unambiguous messages stating: the user identifiers upon which it was registered (**RPL_WELCOME**), the server name and version (**RPL_YOURHOST**), the server birth information (**RPL_CREATED**), available user and channel modes (**RPL_MYINFO**), and it MAY send any introductory messages which may be deemed appropriate.
+
+In particular the server SHALL send the current user/service/server count (as per the LUSER reply) and finally the MOTD (if any, as per the MOTD reply).
+
+
 ## IRC client -> [WeeChat](https://weechat.org/files/doc/weechat/stable/weechat_quickstart.en.html)
 
 ### Basic commands
@@ -450,28 +465,68 @@ The **realname** supplied with USER is used to populate the real name field that
 `/topic <channel> [<topic>]` - The topic for channel &lt;channel&gt; is returned if there is no &lt;topic&gt; given. If the &lt;topic&gt; parameter is present, the topic for that channel will be changed, if the channel modes permit this action.  
 `/mode <channel> {[+|-]|i|t|k|o|l} [<user>]` - The user MODEs are typically changes which affect either how the client is seen by others or what 'extra' messages the client is sent.
 
-### RFC2813
-
-#### Connection ´Liveness´
-
-To detect when a connection has died or become unresponsive, the server MUST **poll** each of its connections.
-
-If a connection doesn’t respond in time, its connection is closed using the appropriate procedures.
-
-#### Users
-
-When a server successfully registers a new user connection, it is REQUIRED to send to the user unambiguous messages stating: the user identifiers upon which it was registered (**RPL_WELCOME**), the server name and version (**RPL_YOURHOST**), the server birth information (**RPL_CREATED**), available user and channel modes (**RPL_MYINFO**), and it MAY send any introductory messages which may be deemed appropriate.
-
-In particular the server SHALL send the current user/service/server count (as per the LUSER reply) and finally the MOTD (if any, as per the MOTD reply).
-
-
-
 ## Connecting WeeChat to localhost (using nc)
 
 PASS \[password\]
 CAP LS 302
 NICK \[irc.server.\[server name\].nicks\]
 USER \[irc.server.\[server name\].nicks\] 0 \* :\[irc.server.\[server name\].realname\]
+
+## Structs
+
+### addrinfo
+
+Loaded before calling `getaddrinfo()`, that fills out the structure as needed.
+
+``` c++
+struct addrinfo {
+    int              ai_flags;     // AI_PASSIVE, AI_CANONNAME, etc.
+    int              ai_family;    // AF_INET, AF_INET6, AF_UNSPEC
+    int              ai_socktype;  // SOCK_STREAM, SOCK_DGRAM
+    int              ai_protocol;  // use 0 for "any"
+    size_t           ai_addrlen;   // size of ai_addr in bytes
+    struct sockaddr *ai_addr;      // struct sockaddr_in or _in6
+    char            *ai_canonname; // full canonical hostname
+
+    struct addrinfo *ai_next;      // linked list, next node
+};
+```
+
+The `struct sockaddr` holds socket address information for many types of sockets.
+
+```c++
+struct sockaddr {
+    unsigned short    sa_family;    // address family, AF_xxx
+    char              sa_data[14];  // 14 bytes of protocol address
+}; 
+```
+
+To deal with `struct sockaddr`, programmers created a parallel structure: `struct sockaddr_in` to be used with IPv4. A pointer to a struct `sockaddr_in` can be cast to a pointer to a `struct sockaddr` and vice-versa. So even though `connect()` wants a `struct sockaddr*`, you can still use a `struct sockaddr_in` and cast it.
+
+``` c++
+// (IPv4 only--see struct sockaddr_in6 for IPv6)
+
+struct sockaddr_in {
+    short int          sin_family;  // Address family, AF_INET
+    unsigned short int sin_port;    // Port number
+    struct in_addr     sin_addr;    // Internet address
+    unsigned char      sin_zero[8]; // Same size as struct sockaddr
+```
+
+This structure makes it easy to reference elements of the socket address. Note that sin_zero should be set to all zeros with the function `memset()`.
+
+```c++
+// (IPv4 only--see struct in6_addr for IPv6)
+
+// Internet address (a structure for historical reasons)
+struct in_addr {
+    uint32_t s_addr; // that's a 32-bit int (4 bytes)
+};
+````
+
+`ina.sin_addr.s_addr` references the 4-byte IP address (in Network Byte Order).
+
+
 
 ## Functions
 
