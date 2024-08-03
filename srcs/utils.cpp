@@ -31,10 +31,3 @@ int check_valid_port(char *port)
         return (1);
 	return (0);
 }
-
-void exit_routine(std::string error, int serverSocket)
-{
-    std::cerr << "ERROR: " << error << std::endl;
-    close(serverSocket);
-    exit (EXIT_FAILURE);
-}

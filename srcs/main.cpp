@@ -1,4 +1,5 @@
 #include "../inc/main.hpp"
+#include "../inc/Server.hpp"
 
 int main(int ac, char **argv)
 {
@@ -13,7 +14,15 @@ int main(int ac, char **argv)
         return 1;
     }
     std::string pwd(argv[2]);
-    Server server(argv[1], pwd);
-    server.start();
+    try
+    {
+        Server server(argv[1], pwd);
+        server.start();
+    }
+    catch(const std::exception& e)
+    {
+        std::cout << "ERROR: ";
+        std::cerr << e.what() << '\n';
+    }
     return 0;
 }
