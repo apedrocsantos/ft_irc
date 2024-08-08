@@ -24,16 +24,47 @@ Server::Server(char *port, std::string pwd)
     pollfd serverfd = {this->socketId, POLLIN, 0};
             this->pollfds.push_back(serverfd);
     freeaddrinfo(this->res);
+    // this->_cmdList["PASS"] = new CmdList("Teste");
     std::cout << "Setup ok\n";
 }
 
 Server::~Server()
 {
     std::cout << "Closing fds\n";
-    std::vector<struct pollfd>::iterator it;
-    for (it = this->pollfds.begin(); it != this->pollfds.end(); it++)
-        close(it->fd);
+    for (it_pollfd = this->pollfds.begin(); it_pollfd != this->pollfds.end(); it_pollfd++)
+        close(it_pollfd->fd);
     this->pollfds.clear();
+}
+
+void Server::addClient()
+{
+    struct sockaddr_in addr;
+    socklen_t addr_size;
+    char *hostname;
+
+    std::cout << "Client asking to be accepted\n";
+    this->new_fd = accept(this->socketId, (struct sockaddr *)&addr, &addr_size);
+    if (this->new_fd > 0)
+    {
+        pollfd clientfd = {this->new_fd, POLLIN | POLLOUT, 0};
+        this->pollfds.push_back(clientfd);
+        hostname = inet_ntoa(addr.sin_addr);
+        client_list.insert(std::make_pair(this->new_fd, new Client(this->new_fd, std::string(hostname))));
+        std::cout << "Users connected: " << this->pollfds.size() - 1 << std::endl;
+        const char *msg = "001 kifer :WELCOME dude!\r\n";
+        send(this->new_fd, msg, strlen(msg), 0);
+    }
+    else
+        std::cerr << "Unable to connect client\n";
+}
+
+void Server::removeClient()
+{
+    std::cout << "client disconnected\n";
+    close(this->it_pollfd->fd);
+    this->pollfds.erase(this->it_pollfd);
+    this->it_pollfd = this->pollfds.begin();
+    std::cout << "nb of clients: " << this->pollfds.size() -1 << std::endl;
 }
 
 void Server::receive_msg()
@@ -41,32 +72,46 @@ void Server::receive_msg()
     int index = 0;
     int msg_size;
 
-    std::cout << "msg received\n";
-    msg_size = recv(this->new_fd, &buf[index], MESSAGE_BUFFER_SIZE, 0);
-    if (msg_size == -1)
+    msg_size = recv(this->it_pollfd->fd, &buf[index], MESSAGE_BUFFER_SIZE, 0);
+    if (msg_size <= 0)
     {
-        std::cerr << "recv ERROR\n";
-        throw(std::runtime_error("error receiving message"));;
-    }
-    if (!msg_size)
+        removeClient();
         return ;
-    if (buf[index + msg_size - 1] && buf[index + msg_size - 1] != '\n')
-        index += msg_size;
-    else
+    }
+    while (buf[index + msg_size - 1] && buf[index + msg_size - 1] != '\n')
     {
-        std::cout << buf;
+        index += msg_size;
+        msg_size = recv(this->it_pollfd->fd, &buf[index], MESSAGE_BUFFER_SIZE, 0);
+    }
+    if (msg_size)
+    {
+        std::string str(buf);
+        Command *c = new Command(str);
+        c->exec(client_list[this->it_pollfd->fd]);
+        (void) c;
         index = 0;
         std::memset(buf, 0, sizeof buf);
+        return;
     }
+    std::cout << "client disconnected\n";
+    close(it_pollfd->fd);
+    this->pollfds.erase(it_pollfd);
+    it_pollfd = this->pollfds.begin();
+    std::cout << "nb of clients: " << this->pollfds.size() -1 << std::endl;
 }
+
+// std::map<std::string, class CmdList> Server::getCmdList()
+// {
+//     return this->_cmdList;
+// }
 
 void Server::start()
 {
-    int msg_size = 1;
-    struct sockaddr_storage client_addr;
-    socklen_t addr_size;
-    int len, index;
-    int sent_length;
+    // int msg_size = 1;
+    // struct sockaddr_storage client_addr;
+    // socklen_t addr_size;
+    // int len, index;
+    // int sent_length;
     int poll_count = 0;
 
     if(listen(this->socketId, SOMAXCONN))
@@ -79,49 +124,23 @@ void Server::start()
             throw(std::runtime_error("Poll error"));
         if (poll_count != 0)
         {
-            // Check if a new client is asking to connect
-            if (this->pollfds.front().revents & POLLIN)
+            for (it_pollfd = this->pollfds.begin(); it_pollfd != this->pollfds.end(); it_pollfd++)
             {
-                std::cout << "Client asking to be accepted\n";
-                this->new_fd = accept(this->socketId, (struct sockaddr *)&client_addr, &addr_size);
-                if (this->new_fd > 0)
+                // client connecting
+                if (it_pollfd->fd == this->pollfds.begin()->fd && (it_pollfd->revents & POLLIN))
                 {
-                    pollfd clientfd = {this->new_fd, POLLIN | POLLOUT, 0};
-                    this->pollfds.push_back(clientfd);
-                    std::cout << "Connection received. Users connected: " << poll_count << std::endl;
+                    addClient();
+                    break;
                 }
-                poll_count = poll(this->pollfds.data(), this->pollfds.size(), 5);
-                if (poll_count == -1)
-                    throw(std::runtime_error("Poll error"));
-            }
-            for (std::vector<struct pollfd>::iterator it = this->pollfds.begin(); it != this->pollfds.end(); it++)
-            {
-                if (it->revents & POLLIN)
+                
+                // message receive
+                else if (it_pollfd->revents & POLLIN)
                     receive_msg();
-                // if (it->revents & POLLOUT)
+                // if (it_pollfd->revents & POLLOUT)
                 //     std::cout << "Client ready to receive message\n";
             }
         }
-        index = 0;
-        // if (this->new_fd != -1)
-        // {
-        //     // recv
-        //     msg_size = recv(this->new_fd, &buf[index], MESSAGE_BUFFER_SIZE, 0);
-        //     if (msg_size == -1)
-        //     {
-        //         std::cerr << "recv ERROR\n";
-        //         break;
-        //     }
-        //     if (!msg_size)
-        //         break;
-        //     if (buf[index + msg_size - 1] && buf[index + msg_size - 1] != '\n')
-        //         index += msg_size;
-        //     else
-        //     {
-        //         std::cout << buf;
-        //         index = 0;
-        //         std::memset(buf, 0, sizeof buf);
-        //     }
+        // index = 0;
         //     std::string str(buf);
         //     if(!str.compare(0, 4, "PING"))
         //     {
@@ -132,7 +151,7 @@ void Server::start()
         //     }
 
         //     // send
-        //     const char *msg = "001 kifer :WELCOME!\r\n";
+        //     const char *msg = "001 kifer :WELCOME dude!\r\n";
         //     len = strlen(msg);
         //     sent_length = send(this->new_fd, msg, len, 0);
         //     if (sent_length != len)

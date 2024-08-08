@@ -4,11 +4,11 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = ircserv
 
-FILES =	utils Server
+FILES =	utils Server Client Command CmdList
 
 SRCS =	$(addprefix ./srcs/, $(FILES:=.cpp) main.cpp)
 
-HEADERS =	$(addprefix ./inc/, $(FILES:=.hpp))
+HEADERS =	$(addprefix ./inc/, $(FILES:=.hpp) main.hpp)
 
 all: $(NAME)
 
