@@ -6,8 +6,11 @@
 class CmdList {
     
     public:
-    CmdList(std::string str);
+    CmdList(class Command *cmd, class Client *client);
     ~CmdList() {};
+    void pass(std::string params, class Client *client);
+    void nick(std::string params, class Client *client);
+    void send_msg(std::string msg, class Client *client);
 };
 
 #endif

@@ -12,6 +12,9 @@ class Command {
     Command(std::string str);
     ~Command();
     void exec(class Client *client);
+    std::string get_prefix() {return this->_prefix;};
+    std::string get_command() {return this->_command;};
+    std::string get_params() {return this->_params;};
 };
 
 #endif

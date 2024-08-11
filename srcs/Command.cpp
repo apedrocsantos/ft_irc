@@ -20,9 +20,10 @@ Command::Command(std::string str)
         this->_command = word;
         while (ss2 >> word)
         {
+            if (this->_params.size())
+                this->_params.append(" ");
             str2 = &word[0];
             this->_params.append(str2);
-            this->_params.append(" ");
         }
         if (!this->_prefix.empty())
             std::cout << "prefix: " << this->_prefix << ", ";

@@ -20,11 +20,13 @@ class Server
     std::vector<struct pollfd>::iterator it_pollfd;
     std::map<int, class Client *>::iterator it_map;
     std::map<int, class Client *> client_list;
-    // std::map<std::string, class CmdList> _cmdList;
+    // class CmdList *_cmdList;
 
-    void addClient();
-    void removeClient();
+    void add_client();
+    void remove_client();
     void receive_msg();
+    std::string get_pwd();
+    int get_nb_connected_users() {return this->pollfds.size() - 1;};
     // std::map<std::string, class CmdList> getCmdList();
     // void send_msg();
 };
