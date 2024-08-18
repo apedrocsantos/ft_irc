@@ -19,8 +19,9 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <poll.h>
-#include "lists.hpp"
+#include <errno.h>
 
+#include "lists.hpp"
 #include "colors.hpp"
 #include "Client.hpp"
 #include "CmdList.hpp"
@@ -30,7 +31,6 @@
 #define MESSAGE_BUFFER_SIZE 512
 #define NICKNAME_SIZE 16
 #define CHANNEL_NAME_SIZE 50
-#define PASSWORD "password"
 
 int check_valid_port(char *port);
 

@@ -1,6 +1,10 @@
 #include "../inc/main.hpp"
 #include "../inc/Server.hpp"
 
+bool stop = false;
+
+void handler(int) {stop = true;}
+
 int main(int ac, char **argv)
 {
     if (ac != 3)
@@ -14,10 +18,12 @@ int main(int ac, char **argv)
         return 1;
     }
     std::string pwd(argv[2]);
+    signal(SIGINT, handler);
     try
     {
         Server server(argv[1], pwd);
-        server.start();
+        while (!stop)
+            server.start();
     }
     catch(const std::exception& e)
     {

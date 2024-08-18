@@ -3,10 +3,14 @@
 Command::Command(std::string str)
 {
     char *str2;
+
     std::stringstream ss(str);
     std::string line;
     while (std::getline(ss, line, '\r'))
     {
+        this->_prefix.clear();
+        this->_command.clear();
+        this->_params.clear();
         if (line == "\n")
             return;
         std::stringstream ss2(line);

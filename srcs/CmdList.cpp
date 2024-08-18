@@ -14,9 +14,9 @@ CmdList::CmdList(Command *cmd, Client *client)
 void CmdList::pass(std::string params, class Client *client)
 {
     if (params.empty())
-        send_msg("461 kifer :Please provide a password\r\n", client);
-    else if ((int)params.find(32) != -1 || params.empty() || params.compare(PASSWORD))
-        send_msg("464 kifer :Password incorrect\r\n", client);
+        send_msg("461 [nickname] :Please provide a password\r\n", client);
+    else if ((int)params.find(32) != -1 || params.empty() || params.compare("pass"))
+        send_msg("464 [nickname] :Wrong password\r\n", client);
 }
 
 void CmdList::nick(std::string params, class Client *client)
@@ -30,6 +30,7 @@ void CmdList::send_msg(std::string msg, class Client *client)
     int sent_length;
     int len = msg.length();
 
+    std::cout << "SENDING msg\n";
     sent_length = send(client->getFd(), msg.c_str(), len, 0);
     if (sent_length != len)
         std::cerr << "couldn't send complete msg\n";

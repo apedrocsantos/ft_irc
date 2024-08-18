@@ -3,6 +3,8 @@
 
 #include "main.hpp"
 
+extern bool stop;
+
 class Server
 {
     public:
@@ -12,23 +14,23 @@ class Server
 
     private:
     char *port;
-    std::string pwd;
+    std::string pwd; //password
+    std::map<int, char *> buf; //buffer with incomplete messages, indexed by the client fd
     int socketId, new_fd; //initial socket fd and client fd
     struct addrinfo hints, *res; //initial socket settings
-    char buf[MESSAGE_BUFFER_SIZE];
-    std::vector <struct pollfd> pollfds;
-    std::vector<struct pollfd>::iterator it_pollfd;
-    std::map<int, class Client *>::iterator it_map;
-    std::map<int, class Client *> client_list;
+    std::vector<struct pollfd> pollfds; //list of pollfd structs
+    std::vector<struct pollfd>::iterator it_pollfd; //pollfd iterator
+    std::map<int, class Client *> client_list; //list of clients, indexed by the client fd
+    std::map<int, class Client *>::iterator it_map; //client iterator
+    class Command *command; //command parser
     // class CmdList *_cmdList;
 
     void add_client();
     void remove_client();
     void receive_msg();
-    std::string get_pwd();
+    std::string get_pwd() {return this->pwd;};
     int get_nb_connected_users() {return this->pollfds.size() - 1;};
     // std::map<std::string, class CmdList> getCmdList();
-    // void send_msg();
 };
 
 #endif
