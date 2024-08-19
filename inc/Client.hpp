@@ -14,7 +14,7 @@ class Client
     public:
     Client(int new_fd, std::string hostname);
     ~Client() {};
-    int getFd();
+    int getFd() const {return this->_fd;};
 };
 
 #endif

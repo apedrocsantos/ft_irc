@@ -149,7 +149,7 @@ void Server::receive_msg()
         std::cout << it_pollfd->fd << " says: ";
         std::string str(buf.at(it_pollfd->fd));
         this->command = new Command(str);
-        CmdList cl(command, client_list[this->it_pollfd->fd]);
+        CmdHandler cl(command, client_list[this->it_pollfd->fd], this);
         delete(this->command);
         delete[] buf[it_pollfd->fd];
         buf.erase(it_pollfd->fd);

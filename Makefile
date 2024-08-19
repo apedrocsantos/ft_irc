@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = ircserv
 
-FILES =	utils Server Client Command CmdList
+FILES =	utils Server Client Command CmdHandler
 
 SRCS =	$(addprefix ./srcs/, $(FILES:=.cpp) main.cpp)
 

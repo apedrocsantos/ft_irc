@@ -24,8 +24,9 @@
 #include "lists.hpp"
 #include "colors.hpp"
 #include "Client.hpp"
-#include "CmdList.hpp"
 #include "Command.hpp"
+#include "Server.hpp"
+#include "CmdHandler.hpp"
 
 // #define BACKLOG 10
 #define MESSAGE_BUFFER_SIZE 512

@@ -23,14 +23,14 @@ class Server
     std::map<int, class Client *> client_list; //list of clients, indexed by the client fd
     std::map<int, class Client *>::iterator it_map; //client iterator
     class Command *command; //command parser
-    // class CmdList *_cmdList;
+    // class CmdHandler *_CmdHandler;
 
     void add_client();
     void remove_client();
     void receive_msg();
-    std::string get_pwd() {return this->pwd;};
-    int get_nb_connected_users() {return this->pollfds.size() - 1;};
-    // std::map<std::string, class CmdList> getCmdList();
+    std::string get_pwd() const {return this->pwd;};
+    int get_nb_connected_users() const {return this->pollfds.size() - 1;};
+    // std::map<std::string, class CmdHandler> getCmdHandler();
 };
 
 #endif
