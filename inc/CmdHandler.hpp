@@ -9,7 +9,7 @@ class CmdHandler {
     CmdHandler(class Command *cmd, class Client *client, class Server *server);
     ~CmdHandler() {};
     // void pass(std::string params, Client *client);
-    // void nick(std::string params, Client *client);
+    void nick(Command *cmd, Client *client);
     // void send_msg(std::string msg, Client *client);
 };
 

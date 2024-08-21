@@ -37,6 +37,6 @@ Command::Command(std::string str)
 
 void Command::exec(class Client *client)
 {
-    (void) client;
-    // std::cout << "EXCUTE on " << client->getFd() << "\n";
+    //(void) client;
+    std::cout << "EXCUTE on " << client->getFd() << "\n";
 }

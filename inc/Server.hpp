@@ -3,6 +3,8 @@
 
 #include "main.hpp"
 
+# include "CmdHandler.hpp"
+
 extern bool stop;
 
 class Server

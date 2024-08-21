@@ -113,11 +113,11 @@ Numeric Replies:
 #### User message
 
 Command: USER
-Parameters: \<username> \<hostname> \<servername> \<realname>
+Parameters: \<username> \<ip> \<servername> \<realname>
 
-The USER message is used at the beginning of connection to specify the username, hostname, servername and realname of a new user.
+The USER message is used at the beginning of connection to specify the username, ip, servername and realname of a new user.
 
-Note that hostname and servername are normally ignored by the IRC server when the USER command comes from a directly connected client (for security reasons).
+Note that ip and servername are normally ignored by the IRC server when the USER command comes from a directly connected client (for security reasons).
 
 It must be noted that realname parameter must be the last parameter, because it may contain space characters and must be prefixed with a colon (’:’) to make sure this is recognised as such.
 
@@ -167,7 +167,7 @@ Parameters: \<channel>{,\<channel>} [\<key>{,\<key>}]
 The JOIN command is used by client to start listening a specific channel. Whether or not a client is allowed to join a channel is checked only by the server the client is connected to;
 
 1.	the user must be invited if the channel is invite-only;
-2.	the user’s nick/username/hostname must not match any active bans;
+2.	the user’s nick/username/ip must not match any active bans;
 3.	the correct key (password) must be given if it is set.
 
 Once a user has joined a channel, they receive notice about all commands their server receives which affect the channel.  This includes MODE, KICK, PART, QUIT and of course PRIVMSG/NOTICE.

@@ -83,7 +83,7 @@ void Server::add_client()
 {
     struct sockaddr_in addr;
     socklen_t addr_size = sizeof(addr);
-    // char *hostname;
+    // char *ip;
 
     std::cout << "Client asking to be accepted\n";
     this->new_fd = accept(this->socketId, (struct sockaddr *)&addr, &addr_size);
@@ -93,8 +93,8 @@ void Server::add_client()
     {
         pollfd clientfd = {this->new_fd, POLLIN, 0};
         this->pollfds.push_back(clientfd);
-        char *hostname = inet_ntoa(addr.sin_addr);
-        client_list.insert(std::make_pair(this->new_fd, new Client(this->new_fd, std::string(hostname))));
+        char *ip = inet_ntoa(addr.sin_addr);
+        client_list.insert(std::make_pair(this->new_fd, new Client(this->new_fd, std::string(ip))));
         std::string msg = "001 [nickname] :WELCOME MODAFOCA!\n";
         send(this->new_fd, msg.c_str(), msg.length(), 0);
         std::cout << "connected users: " << get_nb_connected_users() << std::endl;
@@ -149,7 +149,7 @@ void Server::receive_msg()
         std::cout << it_pollfd->fd << " says: ";
         std::string str(buf.at(it_pollfd->fd));
         this->command = new Command(str);
-        CmdHandler cl(command, client_list[this->it_pollfd->fd], this);
+        CmdHandler cmdH(command, client_list[this->it_pollfd->fd], this);
         delete(this->command);
         delete[] buf[it_pollfd->fd];
         buf.erase(it_pollfd->fd);

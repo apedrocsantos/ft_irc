@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <errno.h>
+#include <set>
 
 #include "lists.hpp"
 #include "colors.hpp"
@@ -32,6 +33,9 @@
 #define MESSAGE_BUFFER_SIZE 512
 #define NICKNAME_SIZE 16
 #define CHANNEL_NAME_SIZE 50
+
+// All the nicknames in the current server
+extern std::set<std::string> usedNicknames;
 
 int check_valid_port(char *port);
 
