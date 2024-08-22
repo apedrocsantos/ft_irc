@@ -19,8 +19,9 @@ class Client
     ~Client() {};
 
 	// Setters
-	void setNick(std::string _nick);
 	void setOldNick(std::string _nick);
+	void setNick(std::string _nick);
+	void setUser(std::string username);
 
 	// Getters
 	int getFd() const {return _fd;};

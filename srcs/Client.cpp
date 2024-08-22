@@ -13,6 +13,10 @@ void Client::setOldNick(std::string _nick) {
 	_oldNick = _nick;
 }
 
+void Client::setUser(std::string username) {
+	_username = username;
+}
+
 std::string Client::getOldNick() { return _oldNick; }
 
 std::string Client::getNick() { return _nickname; }

@@ -6,6 +6,7 @@
 #include <cstring>
 #include <csignal>
 #include <cstdlib>
+#include <ctype.h>
 #include <vector>
 #include <map>
 #include <utility>
@@ -16,7 +17,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <errno.h>

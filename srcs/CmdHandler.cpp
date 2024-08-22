@@ -9,12 +9,18 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
     (void) server;
     std::string password = "pwd";
 	std::cout << cmd->get_command() << std::endl;
-    if (cmd->get_command() == "NICK")
-        nick(cmd, client);
-    /* if (cmd->get_command() == "PASS")
-        //pass(cmd->get_params(), client);
-    if (cmd->get_command() == "USER")
-    if (cmd->get_command() == "QUIT") */
+	if (cmd->get_command() == "NICK")
+		nick(cmd, client);
+	if (cmd->get_command() == "USER")
+		user(cmd, client, server);
+	if (cmd->get_command() == "PASS")
+		pass(cmd, client);
+    /* if (cmd->get_command() == "QUIT") */
+}
+
+bool checkFirstNumbSymbol(const std::string &str) {
+	char firstChar = str[0];
+	return std::isdigit(firstChar) || std::ispunct(firstChar);
 }
 
 void CmdHandler::nick(Command *cmd, Client *client) {
@@ -27,9 +33,13 @@ void CmdHandler::nick(Command *cmd, Client *client) {
 
 	// check if the first char of the nick is a number or symbol
 
+	if (checkFirstNumbSymbol(newNick)) return ERR_ErroneusNickName(client);
+
+	if (newNick.empty()) return ERR_NoNicknameGiven(client);
+
 	if (usedNicknames.find(newNick) != usedNicknames.end()) {
 		std::cout << "Error: Nickname is already in use." << std::endl;
-		return ERR_NickNameInUse(cmd, client);
+		return ERR_NickNameInUse(client);
 	}
 
 	// Remove the old nickname from the used set
@@ -37,11 +47,8 @@ void CmdHandler::nick(Command *cmd, Client *client) {
 
 	if (client->getOldNick().empty()) client->setOldNick(newNick);
 	else client->setOldNick(client->getNick());
-	//std::cout << "old nick: " << client->getNick() << std::endl;
 	client->setNick(newNick);
 	RPL_Nick(client);
-	//std::string output = Nick(cmd, client);
-	//send(client->getFd(), output.c_str(), output.size(), 0);
 
 	// Add the new nickname to the used set
 	usedNicknames.insert(newNick);
@@ -51,6 +58,57 @@ void CmdHandler::nick(Command *cmd, Client *client) {
 	// :<OLDNICK/CURRENTNICK>!~<user>@<IP> NICK :<NEWNICK>
 
 	// JOIN  :<OLDNICK>!~<USER>@<IP> JOIN #world
+}
+
+
+// Function to split a string by spaces
+std::vector<std::string> splitString(const std::string& str) {
+	std::vector<std::string> result;
+	std::istringstream iss(str);
+	std::string token;
+
+	while (iss >> token) {
+		result.push_back(token);
+	}
+return result;
+}
+
+// Function to check if the string contains all the correct parameters
+bool hasCorrectParams(const std::string& str) {
+	std::vector<std::string> parameters = splitString(str);
+
+	// Check if there are exactly four parameters
+	if (parameters.size() != 5) return false;
+
+	// checks if the realname starts with the ":"
+	if (parameters[3][0] != ':') return false;
+
+	parameters[3] = parameters[3].substr(1);
+
+	return true;
+}
+
+void CmdHandler::user(Command *cmd, Client *client, Server *server) {
+	std::string params = cmd->get_params();
+	std::stringstream ss(params);
+	std::string username;
+	
+	ss >> username;
+
+	// if the user is already registered
+	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
+
+	// if there are missing parameters
+	if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
+
+	client->setUser(username);
+
+	(void)client;
+	(void)server;
+}
+
+void pass(Command *cmd, Client *client) {
+	
 }
 
 // pass primeiro cmd, para verificar a pass
