@@ -6,37 +6,38 @@
 #include <cstring>
 #include <csignal>
 #include <cstdlib>
-#include <ctype.h>
 #include <vector>
 #include <map>
 #include <utility>
 #include <sstream>
+#include <set>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <errno.h>
-#include <set>
 
 #include "lists.hpp"
 #include "colors.hpp"
 #include "Client.hpp"
 #include "Command.hpp"
-#include "Server.hpp"
 #include "CmdHandler.hpp"
+#include "Channel.hpp"
+#include "Server.hpp"
+#include "utils.hpp"
+#include "replies.hpp"
 
 // #define BACKLOG 10
 #define MESSAGE_BUFFER_SIZE 512
 #define NICKNAME_SIZE 16
 #define CHANNEL_NAME_SIZE 50
 
-// All the nicknames in the current server
+// CHANGE
 extern std::set<std::string> usedNicknames;
-
-int check_valid_port(char *port);
 
 #endif

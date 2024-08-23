@@ -9,7 +9,7 @@ class Command {
     std::string _params;
 
     public:
-    Command(std::string str);
+    Command(std::string str, Server *server);
     ~Command() {};
     void exec(class Client *client);
     std::string get_prefix() const {return this->_prefix;};

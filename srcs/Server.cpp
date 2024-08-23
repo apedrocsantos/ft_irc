@@ -1,6 +1,6 @@
-#include "../inc/Server.hpp"
+#include "../inc/main.hpp"
 
-Server::Server(char *port, std::string pwd)
+Server::Server(char *port, std::string pwd) : _name("ircserv")
 {
     int optval = 1;
     this->port = port;
@@ -21,7 +21,11 @@ Server::Server(char *port, std::string pwd)
         freeaddrinfo(this->res);   
         throw(std::runtime_error("Can't create socket!"));
     }
-    fcntl(this->socketId, F_SETFL, O_NONBLOCK);
+    if (fcntl(this->socketId, F_SETFL, O_NONBLOCK))
+    {
+        freeaddrinfo(this->res);
+        throw(std::runtime_error("Error setting fcntl options"));
+    }
     if (setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
     {
         freeaddrinfo(this->res);
@@ -51,6 +55,11 @@ Server::~Server()
     this->pollfds.clear();
     for (it_map = this->client_list.begin(); it_map != this->client_list.end(); it_map++)
         delete (it_map->second);
+    for (it_channel_list = this->channel_list.begin(); it_channel_list != this->channel_list.end(); it_channel_list++)
+    {
+        std::cout << it_channel_list->first << std::endl;
+        delete(it_channel_list->second);
+    }
 }
 
 void Server::start()
@@ -83,7 +92,7 @@ void Server::add_client()
 {
     struct sockaddr_in addr;
     socklen_t addr_size = sizeof(addr);
-    // char *ip;
+    // char *hostname;
 
     std::cout << "Client asking to be accepted\n";
     this->new_fd = accept(this->socketId, (struct sockaddr *)&addr, &addr_size);
@@ -93,10 +102,8 @@ void Server::add_client()
     {
         pollfd clientfd = {this->new_fd, POLLIN, 0};
         this->pollfds.push_back(clientfd);
-        char *ip = inet_ntoa(addr.sin_addr);
-        client_list.insert(std::make_pair(this->new_fd, new Client(this->new_fd, std::string(ip))));
-        std::string msg = "001 [nickname] :WELCOME MODAFOCA!\n";
-        send(this->new_fd, msg.c_str(), msg.length(), 0);
+        char *hostname = inet_ntoa(addr.sin_addr);
+        client_list.insert(std::make_pair(this->new_fd, new Client(this->new_fd, std::string(hostname))));
         std::cout << "connected users: " << get_nb_connected_users() << std::endl;
     }
     catch(const std::exception& e)
@@ -146,12 +153,11 @@ void Server::receive_msg()
     str = buf[it_pollfd->fd];
     if (msg_size && (int) str.find('\n') != -1)
     {
-        std::cout << it_pollfd->fd << " says: ";
         std::string str(buf.at(it_pollfd->fd));
-        this->command = new Command(str);
-        CmdHandler cmdH(command, client_list[this->it_pollfd->fd], this);
+        this->command = new Command(str, this);
+        // CmdHandler cl(command, client_list[this->it_pollfd->fd], this);
         delete(this->command);
-        delete[] buf[it_pollfd->fd];
-        buf.erase(it_pollfd->fd);
+        // delete[] buf[it_pollfd->fd];
+        // buf.erase(it_pollfd->fd);
     }
 }

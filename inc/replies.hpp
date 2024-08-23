@@ -6,17 +6,27 @@
 class Command;
 class Client;
 class Server;
+class Channel;
 
 // COMMANDS
-void RPL_Join(Command *cmd, Client *client);
-
 /**
  * :<OLDNICK/CURRENTNICK>!~<user>@<IP> NICK :<NEWNICK>
  * @param client The user that ran the cmd
  */
-void RPL_Nick(Client *client);
+void NICK(Client *client);
+void JOIN(Client *client, Channel *channel);
+void PONG(Command *cmd, Client *client);
 
-void RPL_User(Command *cmd, Client *client, Server *server);
+
+// RPLs
+
+void RPL_TOPIC(Client *client, Channel *channel);
+
+void RPL_NAMREPLY(Client *client, Channel *channel);
+
+void RPL_ENDOFNAMES(Client *client, Channel *channel);
+
+void RPL_WELCOME(Client *client);
 
 //! ERRORS!
 
@@ -72,6 +82,9 @@ void ERR_AlreadyRegistered(Client *client);
  */
 //void ERR_NotRegistered(Client *client)
 
-//void RPL_topic(Client client, Channel channel);
-
+void ERR_NEEDMOREPARAMS(Command *cmd, Client *client);
+void ERR_BADCHANNELKEY(Client *client, Channel *channel);
+void ERR_CHANNELISFULL(Client *client, Channel *channel);
+void ERR_INVITEONLYCHAN(Client *client, Channel *channel);
+void ERR_NOSUCHCHANNEL(Client *client, std::string name);
 #endif

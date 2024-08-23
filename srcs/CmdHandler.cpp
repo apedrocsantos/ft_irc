@@ -1,21 +1,22 @@
-#include "../inc/CmdHandler.hpp"
+#include "../inc/main.hpp"
 
 std::set<std::string> usedNicknames;
 
 CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 {
-    (void) cmd;
-    (void) client;
-    (void) server;
-    std::string password = "pwd";
-	std::cout << cmd->get_command() << std::endl;
-	if (cmd->get_command() == "NICK")
+    if (cmd->get_command() == "NICK")
 		nick(cmd, client);
 	if (cmd->get_command() == "USER")
 		user(cmd, client, server);
-	if (cmd->get_command() == "PASS")
-		pass(cmd, client);
-    /* if (cmd->get_command() == "QUIT") */
+	// if (cmd->get_command() == "PASS")
+	// 	pass(cmd, client);
+    if (cmd->get_command() == "PING")
+		pong(cmd, client);
+    // if (cmd->get_command() == "QUIT")
+    if (cmd->get_command() == "JOIN")
+        join(cmd, client, server);
+    if (cmd->get_command() == "MODE")
+        mode(cmd, client, server);
 }
 
 bool checkFirstNumbSymbol(const std::string &str) {
@@ -27,7 +28,6 @@ void CmdHandler::nick(Command *cmd, Client *client) {
 	std::string params = cmd->get_params();
 	std::stringstream ss(params);
 	std::string newNick;
-
 	// Remove the first word and store it in newNick
 	ss >> newNick;
 
@@ -47,16 +47,17 @@ void CmdHandler::nick(Command *cmd, Client *client) {
 
 	if (client->getOldNick().empty()) client->setOldNick(newNick);
 	else client->setOldNick(client->getNick());
+	//std::cout << "old nick: " << client->getNick() << std::endl;
 	client->setNick(newNick);
-	RPL_Nick(client);
+	NICK(client);
+	//std::string output = Nick(cmd, client);
+	//send(client->getFd(), output.c_str(), output.size(), 0);
 
 	// Add the new nickname to the used set
 	usedNicknames.insert(newNick);
-
-	std::cout << "params: " << params << " new nickinC: " << client->getNick() <<  std::endl;
+	// std::cout << "params: " << params << " new nickinC: " << client->getNick() <<  std::endl;
 	// :justshush!~justshush@<IP> NICK :justshush4
 	// :<OLDNICK/CURRENTNICK>!~<user>@<IP> NICK :<NEWNICK>
-
 	// JOIN  :<OLDNICK>!~<USER>@<IP> JOIN #world
 }
 
@@ -70,7 +71,7 @@ std::vector<std::string> splitString(const std::string& str) {
 	while (iss >> token) {
 		result.push_back(token);
 	}
-return result;
+    return result;
 }
 
 // Function to check if the string contains all the correct parameters
@@ -92,46 +93,105 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	std::string params = cmd->get_params();
 	std::stringstream ss(params);
 	std::string username;
-	
+
 	ss >> username;
 
 	// if the user is already registered
 	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
 
 	// if there are missing parameters
-	if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
+	// if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
 
 	client->setUser(username);
 
-	(void)client;
+    RPL_WELCOME(client);
+
 	(void)server;
 }
 
-void pass(Command *cmd, Client *client) {
-	
+// void CmdHandler::pass(Command *cmd, Client *client) {
+
+// }
+
+void CmdHandler::pong(Command *cmd, Client *client)
+{
+    if (cmd->get_params().empty())
+        ERR_NEEDMOREPARAMS(cmd, client);
+    else
+        PONG(cmd, client);
 }
 
-// pass primeiro cmd, para verificar a pass
-// por na espera na fd poll e so depois mandar para a client se a pass for correta
-// void CmdHandler::pass(std::string params, class Client *client)
-// {
-//     if (params.empty())
-//         send_msg("461 [nickname] :Please provide a password\r\n", client);
-//     else if ((int)params.find(32) != -1 || params.empty() || params.compare("pass"))
-//         send_msg("464 [nickname] :Wrong password\r\n", client);
-// }
+void CmdHandler::join(Command *cmd, Client *client, Server *server)
+{
+    int index = 0;
+    std::vector<std::string> names;
+    std::vector<std::string> passwords;
 
-// void CmdHandler::send_msg(std::string msg, class Client *client)
-// {
-//     int sent_length;
-//     int len = msg.length();
+    std::string params = cmd->get_params();
 
-//     std::cout << "SENDING msg\n";
-//     sent_length = send(client->getFd(), msg.c_str(), len, 0);
-//     if (sent_length != len)
-//         std::cerr << "couldn't send complete msg\n";
-//     if (sent_length == -1)
-//         std::cerr << "send ERROR\n";
-//     if (sent_length != len)
-//         std::cout << "ERROR: Couldn't send full message.\n";
-// }
+    if (params.empty())
+    {
+        ERR_NEEDMOREPARAMS(cmd, client);
+        return ;
+    }
+    std::stringstream ss(cmd->get_params());
+    std::string str;
+    // get channels
+    ss >> str;
+    std::stringstream ss2(str);
+    while (std::getline(ss2, str, ','))
+    {
+        if (str[0] == '#' || str[0] == '&')
+        {
+            if ((str.find(0x20) == std::string::npos) && (str.find(0x07) == std::string::npos) && (str.find(0x2c) == std::string::npos))
+                names.push_back(str);
+        }
+        else
+            ERR_NOSUCHCHANNEL(client, str);
+    }
+    // get passwords
+    if(ss >> str)
+    {
+        std::stringstream ss3(str);
+        while (std::getline(ss3, str, ','))
+            passwords.push_back(str);
+    }
+
+    std::map<std::string, class Channel *> list = server->get_channel_list();
+    for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
+    {
+        try
+        {
+            list.at(*it);
+        }
+        catch (const std::out_of_range& e)
+        {
+            server->add_channel(*it, new Channel (*it));
+        }
+        list = server->get_channel_list();
+        if (list[*it]->get_user_limit() != -1 && list[*it]->get_nb_users() >= list[*it]->get_user_limit())
+            ERR_CHANNELISFULL(client, list[*it]);
+        else if (((int)passwords.size() > index && list[*it]->get_key() != passwords[index]))
+            ERR_BADCHANNELKEY(client, list[*it]);
+        else if (list[*it]->get_inviteOnly() == true)
+            ERR_INVITEONLYCHAN(client, list[*it]);
+        else
+        {
+            list[*it]->set_member(client);
+            JOIN(client, list[*it]);
+            if (!list[*it]->get_topic().empty())
+                RPL_TOPIC(client, list[*it]);
+            RPL_NAMREPLY(client, list[*it]);
+            RPL_ENDOFNAMES(client, list[*it]);
+        }
+        index++;
+    }
+}
+
+void CmdHandler::mode(Command *cmd, Client *client, Server *server)
+{
+    (void) cmd;
+    (void) client;
+    (void) server;
+    std::cout << "MODE\n";
+}

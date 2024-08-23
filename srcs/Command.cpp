@@ -1,6 +1,6 @@
-#include "../inc/Command.hpp"
+#include "../inc/main.hpp"
 
-Command::Command(std::string str)
+Command::Command(std::string str, Server *server)
 {
     char *str2;
 
@@ -8,11 +8,11 @@ Command::Command(std::string str)
     std::string line;
     while (std::getline(ss, line, '\r'))
     {
+        if (line == "\n")
+            return;
         this->_prefix.clear();
         this->_command.clear();
         this->_params.clear();
-        if (line == "\n")
-            return;
         std::stringstream ss2(line);
         std::string word;
         ss2 >> word;
@@ -31,12 +31,17 @@ Command::Command(std::string str)
         }
         if (!this->_prefix.empty())
             std::cout << "prefix: " << this->_prefix << ", ";
+        CmdHandler cl(this, server->client_list[server->it_pollfd->fd], server);
+        // delete(server->command);
+        delete[] server->buf[server->it_pollfd->fd];
+        server->buf.erase(server->it_pollfd->fd);
+        std::cout << server->it_pollfd->fd << " says: ";
         std::cout << "command: " << this->_command << ", params: " << this->_params << std::endl;
     }
 }
 
 void Command::exec(class Client *client)
 {
-    //(void) client;
-    std::cout << "EXCUTE on " << client->getFd() << "\n";
+    (void) client;
+    // std::cout << "EXCUTE on " << client->getFd() << "\n";
 }
