@@ -100,7 +100,7 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
 
 	// if there are missing parameters
-	if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
+	if (!hasCorrectParams(params)) return ERR_NEEDMOREPARAMS(cmd, client);
 
 	client->setUser(username);
 
