@@ -43,11 +43,6 @@ void ERR_NoNicknameGiven(Client *client) {
 	send(client->getFd(), output.c_str(), output.size(), 0);
 }
 
-void ERR_NeedMoreParams(Command *cmd , Client *client) {
-	std::string output = ":ircserv 461 " + cmd->get_command() + " :Not enough parameters\r\n";
-	send(client->getFd(), output.c_str(), output.size(), 0);
-}
-
 void ERR_AlreadyRegistered(Client *client) {
 	std::string output = ":ircserv 462 :You may not reregister\r\n";
 	send(client->getFd(), output.c_str(), output.size(), 0);

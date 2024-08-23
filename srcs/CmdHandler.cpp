@@ -79,7 +79,7 @@ bool hasCorrectParams(const std::string& str) {
 	std::vector<std::string> parameters = splitString(str);
 
 	// Check if there are exactly four parameters
-	if (parameters.size() != 5) return false;
+	if (parameters.size() != 4) return false;
 
 	// checks if the realname starts with the ":"
 	if (parameters[3][0] != ':') return false;
@@ -100,7 +100,7 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
 
 	// if there are missing parameters
-	// if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
+	if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
 
 	client->setUser(username);
 
