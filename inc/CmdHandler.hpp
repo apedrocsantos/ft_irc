@@ -11,6 +11,7 @@ class CmdHandler {
     // void pass(std::string params, Client *client);
     void nick(Command *cmd, Client *client, Server *server);
     void user(Command *cmd, Client *client, Server *server);
+	void pass(Command *cmd, Client *client, Server *server);
     void pong(Command *cmd, Client *client);
     void join(Command *cmd, Client *client, Server *server);
     void mode(Command *cmd, Client *client, Server *server);

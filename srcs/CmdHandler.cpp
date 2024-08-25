@@ -6,8 +6,8 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 		nick(cmd, client, server);
 	if (cmd->get_command() == "USER")
 		user(cmd, client, server);
-	// if (cmd->get_command() == "PASS")
-	// 	pass(cmd, client);
+	if (cmd->get_command() == "PASS")
+		pass(cmd, client, server);
     if (cmd->get_command() == "PING")
 		pong(cmd, client);
     // if (cmd->get_command() == "QUIT")
@@ -113,9 +113,18 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	(void)server;
 }
 
-// void CmdHandler::pass(Command *cmd, Client *client) {
+void CmdHandler::pass(Command *cmd, Client *client, Server *server) {
+	std::string params = cmd->get_params();
+	std::stringstream ss(params);
+	std::string pass;
 
-// }
+	ss >> pass;
+
+	if (server->get_pwd() != pass) return std::cout << "some error idk, maybe ERR_PassWdMisMatch" << std::endl;
+
+	// continue
+	// send pass success
+}
 
 void CmdHandler::pong(Command *cmd, Client *client)
 {
