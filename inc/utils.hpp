@@ -17,7 +17,7 @@ int check_valid_port(char *port);
 // void ERR_NOSUCHCHANNEL(Client *client, std::string name);
 
 // MSGs
-void JOIN(Client *client, Channel *channel);
+void Join(Client *client, Channel *channel);
 
 
 #endif

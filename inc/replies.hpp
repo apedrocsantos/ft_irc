@@ -13,8 +13,9 @@ class Channel;
  * :<OLDNICK/CURRENTNICK>!~<user>@<IP> NICK :<NEWNICK>
  * @param client The user that ran the cmd
  */
-void NICK(Client *client);
-void JOIN(Client *client, Channel *channel);
+void Nick(Client *client);
+void User(Client *client);
+void Join(Client *client, Channel *channel);
 void PONG(Command *cmd, Client *client);
 
 
@@ -82,9 +83,8 @@ void ERR_AlreadyRegistered(Client *client);
  */
 //void ERR_NotRegistered(Client *client)
 
-void ERR_NEEDMOREPARAMS(Command *cmd, Client *client);
-void ERR_BADCHANNELKEY(Client *client, Channel *channel);
-void ERR_CHANNELISFULL(Client *client, Channel *channel);
-void ERR_INVITEONLYCHAN(Client *client, Channel *channel);
-void ERR_NOSUCHCHANNEL(Client *client, std::string name);
+void ERR_BadChannelKey(Client *client, Channel *channel);
+void ERR_ChannelIsFull(Client *client, Channel *channel);
+void ERR_InviteOnlyChan(Client *client, Channel *channel);
+void ERR_NoSuChChannel(Client *client, std::string name);
 #endif
