@@ -19,18 +19,19 @@ class Client
     ~Client() {};
 
 	// Setters
-	void setOldNick(std::string nick) {this->_oldNick = nick;};
-	void setNick(std::string nick) {this->_nick = nick;};
-	void setUser(std::string username) {this->_username = username;};
+	void setOldNick(std::string nick) {_oldNick = nick;};
+	void setNick(std::string nick) {_nick = nick;};
+	void setUser(std::string username) {_username = username;};
+	void setReal(std::string real) { _realname = real; };
 
 	// Getters
 	int getFd() const {return _fd;};
-	std::string getOldNick() {return this->_oldNick;};
-	std::string getNick() {return this->_nick;};
+	std::string getOldNick() {return _oldNick;};
+	std::string getNick() {return _nick;};
 	std::string* getNick_ptr() {return &this->_nick;};
-	std::string getHostname() {return this->_hostname;};
-	std::string getUsername() {return this->_username;};
-	std::string getRealname() {return this->_realname;};
+	std::string getHostname() {return _hostname;};
+	std::string getUsername() {return _username;};
+	std::string getRealname() {return _realname;};
 
 };
 

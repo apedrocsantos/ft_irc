@@ -1,15 +1,13 @@
 #include "../inc/main.hpp"
 
-std::set<std::string> usedNicknames;
-
 CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 {
     if (cmd->get_command() == "NICK")
-		nick(cmd, client);
+		nick(cmd, client, server);
 	if (cmd->get_command() == "USER")
 		user(cmd, client, server);
-	// if (cmd->get_command() == "PASS")
-	// 	pass(cmd, client);
+	if (cmd->get_command() == "PASS")
+		pass(cmd, client, server);
     if (cmd->get_command() == "PING")
 		pong(cmd, client);
     // if (cmd->get_command() == "QUIT")
@@ -24,54 +22,53 @@ bool checkFirstNumbSymbol(const std::string &str) {
 	return std::isdigit(firstChar) || std::ispunct(firstChar);
 }
 
-void CmdHandler::nick(Command *cmd, Client *client) {
+void CmdHandler::nick(Command *cmd, Client *client, Server *server) {
 	std::string params = cmd->get_params();
+	std::vector<std::string> paramsArray;
 	std::stringstream ss(params);
-	std::string newNick;
-	// Remove the first word and store it in newNick
-	ss >> newNick;
+	std::string word, newNick;
+
+	while (ss >> word)
+		paramsArray.push_back(word);
+
+	newNick = paramsArray[0];
 
 	// check if the first char of the nick is a number or symbol
-
 	if (checkFirstNumbSymbol(newNick)) return ERR_ErroneusNickName(client);
 
 	if (newNick.empty()) return ERR_NoNicknameGiven(client);
 
-	if (usedNicknames.find(newNick) != usedNicknames.end()) {
+	if (server->usedNicknames.find(newNick) != server->usedNicknames.end()) {
 		std::cout << "Error: Nickname is already in use." << std::endl;
 		return ERR_NickNameInUse(client);
 	}
 
 	// Remove the old nickname from the used set
-	usedNicknames.erase(client->getNick());
+	server->usedNicknames.erase(client->getNick());
 
 	if (client->getOldNick().empty()) client->setOldNick(newNick);
 	else client->setOldNick(client->getNick());
-	//std::cout << "old nick: " << client->getNick() << std::endl;
 	client->setNick(newNick);
-	NICK(client);
-	//std::string output = Nick(cmd, client);
-	//send(client->getFd(), output.c_str(), output.size(), 0);
+	Nick(client);
 
 	// Add the new nickname to the used set
-	usedNicknames.insert(newNick);
+	server->usedNicknames.insert(newNick);
 	// std::cout << "params: " << params << " new nickinC: " << client->getNick() <<  std::endl;
 	// :justshush!~justshush@<IP> NICK :justshush4
 	// :<OLDNICK/CURRENTNICK>!~<user>@<IP> NICK :<NEWNICK>
 	// JOIN  :<OLDNICK>!~<USER>@<IP> JOIN #world
 }
 
-
 // Function to split a string by spaces
 std::vector<std::string> splitString(const std::string& str) {
 	std::vector<std::string> result;
-	std::istringstream iss(str);
+	std::istringstream ss(str);
 	std::string token;
 
-	while (iss >> token) {
+	while (ss >> token)
 		result.push_back(token);
-	}
-    return result;
+
+	return result;
 }
 
 // Function to check if the string contains all the correct parameters
@@ -89,34 +86,50 @@ bool hasCorrectParams(const std::string& str) {
 	return true;
 }
 
+// USER username o * :realname
 void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	std::string params = cmd->get_params();
+	std::vector<std::string> paramsArray;
 	std::stringstream ss(params);
-	std::string username;
+	std::string word, username;
 
-	ss >> username;
+	while (ss >> word)
+		paramsArray.push_back(word);
+
+	username = paramsArray[0];
 
 	// if the user is already registered
 	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
 
 	// if there are missing parameters
-	if (!hasCorrectParams(params)) return ERR_NEEDMOREPARAMS(cmd, client);
+	if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
 
 	client->setUser(username);
+	client->setReal(paramsArray[3]);
 
-    RPL_WELCOME(client);
+	User(client);
+	RPL_WELCOME(client);
 
 	(void)server;
 }
 
-// void CmdHandler::pass(Command *cmd, Client *client) {
+void CmdHandler::pass(Command *cmd, Client *client, Server *server) {
+	std::string params = cmd->get_params();
+	std::stringstream ss(params);
+	std::string pass;
 
-// }
+	ss >> pass;
+
+	if (server->get_pwd() != pass) return std::cout << "some error idk, maybe ERR_PassWdMisMatch" << std::endl;
+
+	// continue
+	// send pass success
+}
 
 void CmdHandler::pong(Command *cmd, Client *client)
 {
     if (cmd->get_params().empty())
-        ERR_NEEDMOREPARAMS(cmd, client);
+        ERR_NeedMoreParams(cmd, client);
     else
         PONG(cmd, client);
 }
@@ -131,7 +144,7 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
 
     if (params.empty())
     {
-        ERR_NEEDMOREPARAMS(cmd, client);
+        ERR_NeedMoreParams(cmd, client);
         return ;
     }
     std::stringstream ss(cmd->get_params());
@@ -147,7 +160,7 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
                 names.push_back(str);
         }
         else
-            ERR_NOSUCHCHANNEL(client, str);
+            ERR_NoSuChChannel(client, str);
     }
     // get passwords
     if(ss >> str)
@@ -170,15 +183,15 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
         }
         list = server->get_channel_list();
         if (list[*it]->get_user_limit() != -1 && list[*it]->get_nb_users() >= list[*it]->get_user_limit())
-            ERR_CHANNELISFULL(client, list[*it]);
+            ERR_ChannelIsFull(client, list[*it]);
         else if (((int)passwords.size() > index && list[*it]->get_key() != passwords[index]))
-            ERR_BADCHANNELKEY(client, list[*it]);
+            ERR_BadChannelKey(client, list[*it]);
         else if (list[*it]->get_inviteOnly() == true)
-            ERR_INVITEONLYCHAN(client, list[*it]);
+            ERR_InviteOnlyChan(client, list[*it]);
         else
         {
             list[*it]->set_member(client);
-            JOIN(client, list[*it]);
+            Join(client, list[*it]);
             if (!list[*it]->get_topic().empty())
                 RPL_TOPIC(client, list[*it]);
             RPL_NAMREPLY(client, list[*it]);
