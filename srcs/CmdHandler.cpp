@@ -180,7 +180,8 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
         else
         {
             list[*it]->set_member(client);
-            JOIN(client, list[*it]);
+            for (std::map<const std::string*, class Client *>::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
+                JOIN(client, list[*it], it_members->second);
             client->add_channel(*it);
             if (!list[*it]->get_topic().empty())
                 RPL_TOPIC(client, list[*it]);
@@ -194,7 +195,7 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
 void CmdHandler::part(Command *cmd, Client *client, Server *server)
 {
     std::vector<std::string> names;
-    std::string message;
+    std::string message = "ircserv";
 
     std::string params = cmd->get_params();
 
@@ -217,15 +218,15 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
     std::map<std::string, class Channel *> list = server->get_channel_list();
     for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
     {
-        std::cout << *it << std::endl;
         try
         {
             list.at(*it);
-            std::cout << list.at(*it)->get_members() << std::endl;
             if (list.at(*it)->member_exists(client->getNick_ptr()))
             {
-                PART(client, list.at(*it), message);
+                for (std::map<const std::string*, class Client *>::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
+                    PART(client, list.at(*it), message, it_members->second);
                 client->remove_channel(*it);
+                list.at(*it)->remove_member(client->getNick());
             }
             else
                 ERR_NOTONCHANNEL(client, *it);

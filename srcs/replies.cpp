@@ -8,11 +8,12 @@ void NICK(Client *client) {
 	send(client->getFd(), output.c_str(), output.size(), 0);
 }
 
-void JOIN(Client *client, Channel *channel) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " JOIN " + channel->get_name() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+void JOIN(Client *client, Channel *channel, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " JOIN " + channel->get_name() + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
 void PONG(Command *cmd, Client *client) {std::string output = ":ircserv PONG " + cmd->get_params() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
-void PART(Client *client, Channel *channel, std::string msg) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " " + msg + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+// CORRECT if(dest... etc)
+void PART(Client *client, Channel *channel, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " " + msg + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
 
 // REPLIES
 

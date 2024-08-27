@@ -23,6 +23,8 @@ class Channel {
     int get_user_limit() const {return this->_user_limit;}
     int get_nb_users() const {return _members.size();}
     std::string get_members();
+    std::map<const std::string*, class Client *>::iterator get_members_begin() {return _members.begin();};
+    std::map<const std::string*, class Client *>::iterator get_members_end() {return _members.end();};
     bool member_exists(const std::string *name);
     void set_key(std::string key) {this->_key = key;}
     void set_member(class Client* client) {this->_members.insert(this->_members.begin(), std::make_pair(client->getNick_ptr(), client));}
