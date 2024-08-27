@@ -32,7 +32,6 @@ Command::Command(std::string str, Server *server)
         if (!this->_prefix.empty())
             std::cout << "prefix: " << this->_prefix << ", ";
         CmdHandler cl(this, server->client_list[server->it_pollfd->fd], server);
-        // delete(server->command);
         delete[] server->buf[server->it_pollfd->fd];
         server->buf.erase(server->it_pollfd->fd);
         std::cout << server->it_pollfd->fd << " says: ";

@@ -13,6 +13,7 @@ class CmdHandler {
     void user(Command *cmd, Client *client, Server *server);
     void pong(Command *cmd, Client *client);
     void join(Command *cmd, Client *client, Server *server);
+    void part(Command *cmd, Client *client, Server *server);
     void mode(Command *cmd, Client *client, Server *server);
 };
 

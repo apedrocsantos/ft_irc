@@ -9,7 +9,7 @@ class Channel {
     std::string _key;
     bool _inviteOnly;
     int _user_limit;
-    std::map<const std::string *, class Client *> _members;
+    std::map<const std::string*, class Client *> _members;
     std::vector<std::string> _invited_members;
     std::vector<std::string> _operators;
 
@@ -22,10 +22,12 @@ class Channel {
     bool get_inviteOnly() {return this->_inviteOnly;}
     int get_user_limit() const {return this->_user_limit;}
     int get_nb_users() const {return _members.size();}
-    std::string get_members() {std::string output; for (std::map<const std::string *, class Client *>::iterator it_members = _members.begin(); it_members != _members.end(); it_members++) output += *it_members->first + " "; return output;}
+    std::string get_members();
+    bool member_exists(const std::string *name);
     void set_key(std::string key) {this->_key = key;}
     void set_member(class Client* client) {this->_members.insert(this->_members.begin(), std::make_pair(client->getNick_ptr(), client));}
     void set_topic(std::string topic) {this->_topic = topic;}
+    void remove_member(std::string name);
 };
 
 #endif

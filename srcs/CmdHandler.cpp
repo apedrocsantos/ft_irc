@@ -15,6 +15,8 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
     // if (cmd->get_command() == "QUIT")
     if (cmd->get_command() == "JOIN")
         join(cmd, client, server);
+    if (cmd->get_command() == "PART")
+        part(cmd, client, server);
     if (cmd->get_command() == "MODE")
         mode(cmd, client, server);
 }
@@ -179,12 +181,59 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
         {
             list[*it]->set_member(client);
             JOIN(client, list[*it]);
+            client->add_channel(*it);
             if (!list[*it]->get_topic().empty())
                 RPL_TOPIC(client, list[*it]);
             RPL_NAMREPLY(client, list[*it]);
             RPL_ENDOFNAMES(client, list[*it]);
         }
         index++;
+    }
+}
+
+void CmdHandler::part(Command *cmd, Client *client, Server *server)
+{
+    std::vector<std::string> names;
+    std::string message;
+
+    std::string params = cmd->get_params();
+
+    if (params.empty())
+    {
+        ERR_NEEDMOREPARAMS(cmd, client);
+        return ;
+    }
+    std::stringstream ss(cmd->get_params());
+    std::string str;
+    // get channels
+    ss >> str;
+    std::stringstream ss2(str);
+    while (std::getline(ss2, str, ','))
+        names.push_back(str);
+    // get message
+    if (std::getline(ss, str))
+        message = str;
+
+    std::map<std::string, class Channel *> list = server->get_channel_list();
+    for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
+    {
+        std::cout << *it << std::endl;
+        try
+        {
+            list.at(*it);
+            std::cout << list.at(*it)->get_members() << std::endl;
+            if (list.at(*it)->member_exists(client->getNick_ptr()))
+            {
+                PART(client, list.at(*it), message);
+                client->remove_channel(*it);
+            }
+            else
+                ERR_NOTONCHANNEL(client, *it);
+        }
+        catch (const std::out_of_range& e)
+        {
+            ERR_NOSUCHCHANNEL(client, *it);
+        }
     }
 }
 

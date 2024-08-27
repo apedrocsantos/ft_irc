@@ -13,6 +13,7 @@ class Client
     std::string _username;
     std::string _hostname;
     std::string _realname;
+	std::vector<std::string> _channels;
 
     public:
     Client(int new_fd, std::string ip);
@@ -31,7 +32,10 @@ class Client
 	std::string getHostname() {return this->_hostname;};
 	std::string getUsername() {return this->_username;};
 	std::string getRealname() {return this->_realname;};
-
+	std::vector<std::string>::iterator get_channels_begin() {return this->_channels.begin();};
+	std::vector<std::string>::iterator get_channels_end() {return this->_channels.end();};
+	void add_channel(std::string name) {this->_channels.push_back(name);};
+	void remove_channel(std::string &name);
 };
 
 #endif

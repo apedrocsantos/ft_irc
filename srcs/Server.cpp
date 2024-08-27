@@ -116,6 +116,9 @@ void Server::add_client()
 void Server::remove_client()
 {
     std::cout << "removing client\n";
+    for (std::vector<std::string>::iterator it = client_list[this->it_pollfd->fd]->get_channels_begin(); it != client_list[this->it_pollfd->fd]->get_channels_end(); it++)
+        //add PART
+        this->channel_list[*it]->remove_member(client_list[it_pollfd->fd]->getNick());
     close(this->it_pollfd->fd);
     delete(client_list[it_pollfd->fd]);
     client_list.erase(it_pollfd->fd);

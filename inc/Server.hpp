@@ -33,7 +33,6 @@ class Server
 
     public:
     std::map<int, class Client *> client_list; //list of clients, indexed by the client fd
-    // std::map<int, class Client *> * get_client_list() {return &this->client_list;}; //list of clients, indexed by the client fd
     std::map<int, char *> buf; //buffer with incomplete messages, indexed by the client fd
     std::vector<struct pollfd> pollfds; //list of pollfd structs
     std::vector<struct pollfd>::iterator it_pollfd; //pollfd iterator
@@ -42,6 +41,7 @@ class Server
     std::map<std::string, class Channel *> get_channel_list() const {return this->channel_list;};
     int get_nb_connected_users() const {return this->pollfds.size() - 1;};
     void add_channel(std::string name, class Channel *channel) {channel_list.insert(std::make_pair(name, channel));};
+    bool channel_exists(std::string name) {try {channel_list.at(name);} catch (const std::exception& e) {return 0;}; return 1;}
 };
 
 #endif

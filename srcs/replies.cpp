@@ -11,7 +11,10 @@ void NICK(Client *client) {
 void JOIN(Client *client, Channel *channel) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " JOIN " + channel->get_name() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 void PONG(Command *cmd, Client *client) {std::string output = ":ircserv PONG " + cmd->get_params() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
- // REPLIES
+
+void PART(Client *client, Channel *channel, std::string msg) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " " + msg + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+// REPLIES
 
 void RPL_TOPIC(Client *client, Channel *channel) {std::string output = std::string(":ircserv ") + "332 " + client->getNick() + " " + channel->get_name() + " :" + channel->get_topic() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
@@ -57,6 +60,8 @@ void ERR_CHANNELISFULL(Client *client, Channel *channel) {std::string output = s
 void ERR_INVITEONLYCHAN(Client *client, Channel *channel) {std::string output = std::string(":ircserv ") + "473 " + client->getNick() + " " + channel->get_name() + " :Cannot join channel (+i)\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 void ERR_NOSUCHCHANNEL(Client *client, std::string name) {std::string output = std::string(":ircserv ") + "403 " + client->getNick() + " " + name + " :No such channel\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void ERR_NOTONCHANNEL(Client *client, std::string name) {std::string output = std::string(":ircserv ") + "442 " + client->getNick() + " " + name + " :You're not on that channel\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 /* void ERR_NotRegistered(Client *client) {
 	std::string output = ":ircserv 451 :You have not registered\r\n";

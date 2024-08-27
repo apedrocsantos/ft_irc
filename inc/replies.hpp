@@ -16,6 +16,7 @@ class Channel;
 void NICK(Client *client);
 void JOIN(Client *client, Channel *channel);
 void PONG(Command *cmd, Client *client);
+void PART(Client *client, Channel *channel, std::string msg);
 
 
 // RPLs
@@ -87,4 +88,5 @@ void ERR_BADCHANNELKEY(Client *client, Channel *channel);
 void ERR_CHANNELISFULL(Client *client, Channel *channel);
 void ERR_INVITEONLYCHAN(Client *client, Channel *channel);
 void ERR_NOSUCHCHANNEL(Client *client, std::string name);
+void ERR_NOTONCHANNEL(Client *client, std::string name);
 #endif
