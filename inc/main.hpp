@@ -11,6 +11,8 @@
 #include <utility>
 #include <sstream>
 #include <set>
+#include <list>
+#include <algorithm>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>

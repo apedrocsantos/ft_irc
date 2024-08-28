@@ -113,20 +113,20 @@ void Server::add_client()
     }
 }
 
-void Server::remove_client()
+void Server::remove_client(int fd, std::string msg)
 {
     std::cout << "removing client\n";
-    for (std::vector<std::string>::iterator it = client_list[this->it_pollfd->fd]->get_channels_begin(); it != client_list[this->it_pollfd->fd]->get_channels_end(); it++)
-        //add PART
+    for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++)
     {
-        for (std::map<const std::string*, class Client *>::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
-            PART(client_list[this->it_pollfd->fd], channel_list[*it], "quit", it_m->second);
-        this->channel_list[*it]->remove_member(client_list[it_pollfd->fd]->getNick());
+        for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
+            QUIT(client_list[fd], msg, it_m->second);
+        this->channel_list[*it]->remove_member(client_list[fd]->getNick());
     }
-    close(this->it_pollfd->fd);
-    delete(client_list[it_pollfd->fd]);
-    client_list.erase(it_pollfd->fd);
-    this->pollfds.erase(this->it_pollfd);
+    close(fd);
+    delete(client_list[fd]);
+    client_list.erase(fd);
+    // this->pollfds.erase(this->it_pollfd);
+    remove_pollfd(fd);
     this->it_pollfd = this->pollfds.begin();
     std::cout << "nb of clients connected to server: " << get_nb_connected_users() << std::endl;
 }
@@ -154,7 +154,14 @@ void Server::receive_msg()
     {
         delete[] buf[it_pollfd->fd];
         buf.erase(it_pollfd->fd);
-        remove_client();
+        try {
+            client_list.at(it_pollfd->fd);
+        }
+        catch (std::exception& e)
+        {
+            return ;
+        }
+        remove_client(it_pollfd->fd, "Remote host closed the connection");
         return ;
     }
     str = buf[it_pollfd->fd];

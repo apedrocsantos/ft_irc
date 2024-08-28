@@ -6,19 +6,22 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 {
     if (cmd->get_command() == "NICK")
 		nick(cmd, client);
-	if (cmd->get_command() == "USER")
+	else if (cmd->get_command() == "USER")
 		user(cmd, client, server);
-	// if (cmd->get_command() == "PASS")
+	// else if (cmd->get_command() == "PASS")
 	// 	pass(cmd, client);
-    if (cmd->get_command() == "PING")
+    else if (cmd->get_command() == "PING")
 		pong(cmd, client);
-    // if (cmd->get_command() == "QUIT")
-    if (cmd->get_command() == "JOIN")
+    else if (cmd->get_command() == "JOIN")
         join(cmd, client, server);
-    if (cmd->get_command() == "PART")
+    else if (cmd->get_command() == "PART")
         part(cmd, client, server);
-    if (cmd->get_command() == "MODE")
+    else if (cmd->get_command() == "QUIT")
+        quit(cmd, client, server);
+    else if (cmd->get_command() == "MODE")
         mode(cmd, client, server);
+    else
+        ERR_UNKNOWNCOMMAND(client, cmd);
 }
 
 bool checkFirstNumbSymbol(const std::string &str) {
@@ -180,7 +183,7 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
         else
         {
             list[*it]->set_member(client);
-            for (std::map<const std::string*, class Client *>::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
+            for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
                 JOIN(client, list[*it], it_members->second);
             client->add_channel(*it);
             if (!list[*it]->get_topic().empty())
@@ -221,9 +224,9 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
         try
         {
             list.at(*it);
-            if (list.at(*it)->member_exists(client->getNick_ptr()))
+            if (list.at(*it)->member_exists(client->getNick()))
             {
-                for (std::map<const std::string*, class Client *>::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
+                for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
                     PART(client, list.at(*it), message, it_members->second);
                 client->remove_channel(*it);
                 list.at(*it)->remove_member(client->getNick());
@@ -236,6 +239,27 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
             ERR_NOSUCHCHANNEL(client, *it);
         }
     }
+}
+
+void CmdHandler::quit(Command *cmd, Client *client, Server *server)
+{
+    std::vector<std::string> names;
+    std::string message = "Client Quit";
+
+    std::string params = cmd->get_params();
+
+    std::stringstream ss(cmd->get_params());
+    std::string str;
+    if (std::getline(ss, str))
+        message = str;
+    // std::map<std::string, class Channel *> channel_list = server->get_channel_list();
+    // for (std::vector<std::string>::iterator it = client->get_channels_begin(); it != client->get_channels_end(); it++)
+    // {
+    //     for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = channel_list[*it]->get_members_begin(); it_members != channel_list[*it]->get_members_end(); it_members++)
+    //             QUIT(client, message, it_members->second);
+    //     channel_list.at(*it)->remove_member(client->getNick());
+    // }
+    server->remove_client(client->getFd(), message);
 }
 
 void CmdHandler::mode(Command *cmd, Client *client, Server *server)
