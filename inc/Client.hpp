@@ -34,6 +34,7 @@ class Client
 	std::string getRealname() {return this->_realname;};
 	std::vector<std::string>::iterator get_channels_begin() {return this->_channels.begin();};
 	std::vector<std::string>::iterator get_channels_end() {return this->_channels.end();};
+	
 	void add_channel(std::string name) {this->_channels.push_back(name);};
 	void remove_channel(std::string &name);
 };

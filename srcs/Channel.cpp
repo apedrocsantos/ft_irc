@@ -25,8 +25,11 @@ std::string Channel::get_members()
 {
     std::string output = "";
     for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = _members.begin(); it_members != _members.end(); it_members++)
+    {
+        if (std::find(_operators.begin(), _operators.end(), it_members->second->getFd()) != _operators.end())
+            output += "@";
         output += *it_members->first + " ";
-    std::cout << output;
+    }
     return output;
 }
 

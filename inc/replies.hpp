@@ -17,6 +17,7 @@ void NICK(Client *client);
 void JOIN(Client *client, Channel *channel, Client *dest);
 void PONG(Command *cmd, Client *client);
 void PART(Client *client, Channel *channel, std::string msg, Client *dest);
+void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest);
 void QUIT(Client *client, std::string msg, Client *dest);
 
 
@@ -91,4 +92,7 @@ void ERR_INVITEONLYCHAN(Client *client, Channel *channel);
 void ERR_NOSUCHCHANNEL(Client *client, std::string name);
 void ERR_NOTONCHANNEL(Client *client, std::string name);
 void ERR_UNKNOWNCOMMAND(Client *client, Command *cmd);
+void ERR_CHANPRIVISNEEDED(Client *client, Channel *channel);
+void ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *channel);
+
 #endif

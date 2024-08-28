@@ -11,7 +11,6 @@ class Command {
     public:
     Command(std::string str, Server *server);
     ~Command() {};
-    void exec(class Client *client);
     std::string get_prefix() const {return this->_prefix;};
     std::string get_command() const {return this->_command;};
     std::string get_params() const {return this->_params;};
