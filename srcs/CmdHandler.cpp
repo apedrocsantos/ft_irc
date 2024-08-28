@@ -254,6 +254,7 @@ void CmdHandler::kick(Command *cmd, Client *client, Server *server)
 {
     std::string channel;
     std::string user;
+    std::string str;
     std::string message = "ircserv";
     std::vector<std::string> users_to_kick;
 
@@ -265,21 +266,26 @@ void CmdHandler::kick(Command *cmd, Client *client, Server *server)
         return ;
     }
     std::stringstream ss(params);
-    std::getline(ss, channel, ' ');
-    std::stringstream ss2(channel);
+    std::getline(ss, str, ' ');
+    std::stringstream ss2(str);
     std::getline(ss2, channel, ',');
     std::cout << "Channel: " << channel << std::endl;
     // // get user_to_kick
     while (std::getline(ss, user, ','))
+    {
+        std::cout << "user to kick: " << user << std::endl;
         users_to_kick.push_back(user);
+    }
     if (users_to_kick.empty())
     {
         ERR_NEEDMOREPARAMS(cmd, client);
         return ;
     }
-    // // get message
-    // ss >> message;
-    // std::getline(ss, message);
+    // // // get message
+    // std::stringstream ss3(str);
+    // std::getline(ss, str, ' ');
+    // message = str;
+    // std::cout << "message is :" << message << std::endl;
     //kick user
     for (std::vector<std::string>::iterator it_user = users_to_kick.begin(); it_user != users_to_kick.end(); it_user++)
     {
