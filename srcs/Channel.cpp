@@ -1,8 +1,12 @@
 #include "../inc/Channel.hpp"
 
-Channel::Channel(std::string name) : _name(name), _inviteOnly(false), _user_limit(-1)
+Channel::Channel(std::string name) : _name(name), _user_limit(-1)
 {
     std::cout << "Creating channel " << this->_name << std::endl;
+    _flags.insert(_flags.end(), std::make_pair('i', false));
+    _flags.insert(_flags.end(), std::make_pair('t', false));
+    _flags.insert(_flags.end(), std::make_pair('k', false));
+    _flags.insert(_flags.end(), std::make_pair('l', false));
 }
 
 void Channel::remove_member(std::string name)
@@ -18,6 +22,18 @@ void Channel::remove_member(std::string name)
         }
         else
             ++it;
+    }
+}
+
+void Channel::remove_operator(int fd)
+{
+    for (std::vector<int>::iterator it = _operators.begin(); it != _operators.end(); it++)
+    {
+        if (*it == fd)
+        {
+            _operators.erase(it);
+            return ;
+        }
     }
 }
 

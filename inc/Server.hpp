@@ -35,14 +35,16 @@ class Server
 
     std::string get_name() const {return this->_name;}
     Client * get_client(std::string name) {for (std::map<int, class Client *>::iterator it = client_list.begin(); it != client_list.end(); it++)if (it->second->getNick() == name) return it->second; return NULL;}
+    Channel * get_channel(std::string name) {for (std::map<std::string, class Channel *>::iterator it = channel_list.begin(); it != channel_list.end(); it++)if (it->first == name) return it->second; return NULL;}
     std::string get_pwd() const {return this->pwd;};
     std::map<std::string, class Channel *> get_channel_list() const {return this->channel_list;};
     int get_nb_connected_users() const {return this->pollfds.size() - 1;};
 
     void add_client();
     void remove_client(int fd, std::string mgs);
+    void remove_channel(std::string name);
     void add_channel(std::string name, class Channel *channel) {channel_list.insert(std::make_pair(name, channel));};
-    bool channel_exists(std::string name) {try {channel_list.at(name);} catch (const std::exception& e) {return 0;}; return 1;}
+    bool channel_exists(std::string name) {return (channel_list.find(name) != channel_list.end());}
     void remove_pollfd(int fd) {for (std::vector<struct pollfd>::iterator it = pollfds.begin(); it != pollfds.end(); it++) {if (it->fd == fd) {pollfds.erase(it); return;}}}
 };
 

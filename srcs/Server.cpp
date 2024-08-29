@@ -141,6 +141,21 @@ void Server::remove_client(int fd, std::string msg)
     std::cout << "nb of clients connected to server: " << get_nb_connected_users() << std::endl;
 }
 
+void Server::remove_channel(std::string name)
+{
+    std::cout << "deleting channel\n";
+    std::map<std::string, class Channel *> list = get_channel_list();
+    for (std::map<std::string, class Channel *>::iterator it_ch = list.begin(); it_ch != list.end(); it_ch++)
+    {
+        std::cout << "iterating: " << it_ch->first << std::endl;
+        if (it_ch->first == name)
+        {
+            channel_list.erase(it_ch);
+            return;
+        }
+    }
+}
+
 // Corrigir se msg começar com ctrl-d ou for interrompida por vários ctrl-d seguidos
 void Server::receive_msg()
 {
