@@ -14,6 +14,11 @@ class CmdHandler {
 	void pass(Command *cmd, Client *client, Server *server);
     void pong(Command *cmd, Client *client);
     void join(Command *cmd, Client *client, Server *server);
+    void part(Command *cmd, Client *client, Server *server);
+    void kick(Command *cmd, Client *client, Server *server);
+    void invite(Command *cmd, Client *client, Server *server);
+    void topic(Command *cmd, Client *client, Server *server);
+    void quit(Command *cmd, Client *client, Server *server);
     void mode(Command *cmd, Client *client, Server *server);
 };
 

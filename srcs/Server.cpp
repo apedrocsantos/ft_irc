@@ -56,10 +56,7 @@ Server::~Server()
     for (it_map = this->client_list.begin(); it_map != this->client_list.end(); it_map++)
         delete (it_map->second);
     for (it_channel_list = this->channel_list.begin(); it_channel_list != this->channel_list.end(); it_channel_list++)
-    {
-        std::cout << it_channel_list->first << std::endl;
         delete(it_channel_list->second);
-    }
 }
 
 void Server::start()
@@ -113,15 +110,48 @@ void Server::add_client()
     }
 }
 
-void Server::remove_client()
+void Server::remove_client(int fd, std::string msg)
 {
+    std::vector<int> client_fds;
     std::cout << "removing client\n";
-    close(this->it_pollfd->fd);
-    delete(client_list[it_pollfd->fd]);
-    client_list.erase(it_pollfd->fd);
-    this->pollfds.erase(this->it_pollfd);
+    for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++)
+    {
+        for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
+        {
+            if (std::find(client_fds.begin(), client_fds.end(), it_m->second->getFd()) == client_fds.end())
+            {
+                client_fds.push_back(it_m->second->getFd());
+                QUIT(client_list[fd], msg, it_m->second);
+            }
+        }
+        this->channel_list[*it]->remove_member(client_list[fd]->getNick());
+    }
+    if (buf.find(fd) != buf.end())
+    {
+        delete[] buf[it_pollfd->fd];
+        buf.erase(it_pollfd->fd);        
+    }
+    close(fd);
+    delete(client_list[fd]);
+    client_list.erase(fd);
+    remove_pollfd(fd);
+    remove_pollfd(this->it_pollfd->fd);
+    // pollfds.erase(this->it_pollfd);
     this->it_pollfd = this->pollfds.begin();
     std::cout << "nb of clients connected to server: " << get_nb_connected_users() << std::endl;
+}
+
+void Server::remove_channel(std::string name)
+{
+    for (std::map<std::string, class Channel *>::iterator it_ch = channel_list.begin(); it_ch != channel_list.end(); it_ch++)
+    {
+        if (it_ch->first == name)
+        {
+            delete(it_ch->second);
+            channel_list.erase(it_ch);
+            return;
+        }
+    }
 }
 
 // Corrigir se msg começar com ctrl-d ou for interrompida por vários ctrl-d seguidos
@@ -145,9 +175,14 @@ void Server::receive_msg()
     msg_size = recv(it_pollfd->fd, buf.at(it_pollfd->fd) + index, MESSAGE_BUFFER_SIZE - index, 0);
     if (msg_size <= 0)
     {
-        delete[] buf[it_pollfd->fd];
-        buf.erase(it_pollfd->fd);
-        remove_client();
+        try {
+            client_list.at(it_pollfd->fd);
+        }
+        catch (std::exception& e)
+        {
+            return ;
+        }
+        remove_client(it_pollfd->fd, "Remote host closed the connection");
         return ;
     }
     str = buf[it_pollfd->fd];
@@ -155,9 +190,6 @@ void Server::receive_msg()
     {
         std::string str(buf.at(it_pollfd->fd));
         this->command = new Command(str, this);
-        // CmdHandler cl(command, client_list[this->it_pollfd->fd], this);
         delete(this->command);
-        // delete[] buf[it_pollfd->fd];
-        // buf.erase(it_pollfd->fd);
     }
 }

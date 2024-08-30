@@ -15,19 +15,24 @@ class Channel;
  */
 void Nick(Client *client);
 void User(Client *client);
-void Join(Client *client, Channel *channel);
+void JOIN(Client *client, Channel *channel, Client *dest);
 void PONG(Command *cmd, Client *client);
+void PART(Client *client, Channel *channel, std::string msg, Client *dest);
+void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest);
+void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest);
+void MODE(Client *client, std::string params, Client *dest);
+void QUIT(Client *client, std::string msg, Client *dest);
 
 
 // RPLs
 
 void RPL_TOPIC(Client *client, Channel *channel);
-
+void RPL_NOTOPIC(Client *client, Channel *channel);
 void RPL_NAMREPLY(Client *client, Channel *channel);
-
 void RPL_ENDOFNAMES(Client *client, Channel *channel);
-
 void RPL_WELCOME(Client *client);
+void RPL_INVITING(Client *client, std::string user, std::string channel);
+void RPL_CHANNELMODEIS(Client *client, Channel *channel);
 
 //! ERRORS!
 
@@ -82,6 +87,18 @@ void ERR_AlreadyRegistered(Client *client);
  * The text used in the last param of this message may vary.
  */
 //void ERR_NotRegistered(Client *client)
+
+void ERR_NEEDMOREPARAMS(Command *cmd, Client *client);
+void ERR_BADCHANNELKEY(Client *client, Channel *channel);
+void ERR_CHANNELISFULL(Client *client, Channel *channel);
+void ERR_INVITEONLYCHAN(Client *client, Channel *channel);
+void ERR_NOSUCHCHANNEL(Client *client, std::string name);
+void ERR_NOTONCHANNEL(Client *client, std::string name);
+void ERR_UNKNOWNCOMMAND(Client *client, Command *cmd);
+void ERR_CHANOPRIVSNEEDED(Client *client, Channel *channel);
+void ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *channel);
+void ERR_USERONCHANNEL(Client *client, std::string nick, Channel *channel);
+void ERR_NOSUCHNICK(Client *client, std::string nick);
 
 void ERR_BadChannelKey(Client *client, Channel *channel);
 void ERR_ChannelIsFull(Client *client, Channel *channel);

@@ -6,7 +6,9 @@ NAME = ircserv
 
 FILES =	utils Server Client Command CmdHandler Channel replies
 
-SRCS =	$(addprefix ./srcs/, $(FILES:=.cpp) main.cpp)
+COMMANDS = invite join kick mode part topic
+
+SRCS =	$(addprefix ./srcs/Commands/, $(COMMANDS:=.cpp)) $(addprefix ./srcs/, $(FILES:=.cpp) main.cpp)
 
 HEADERS =	$(addprefix ./inc/, $(FILES:=.hpp) main.hpp)
 

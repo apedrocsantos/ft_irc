@@ -4,17 +4,28 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 {
     if (cmd->get_command() == "NICK")
 		nick(cmd, client, server);
-	if (cmd->get_command() == "USER")
+	else if (cmd->get_command() == "USER")
 		user(cmd, client, server);
 	if (cmd->get_command() == "PASS")
 		pass(cmd, client, server);
     if (cmd->get_command() == "PING")
 		pong(cmd, client);
-    // if (cmd->get_command() == "QUIT")
-    if (cmd->get_command() == "JOIN")
+    else if (cmd->get_command() == "JOIN")
         join(cmd, client, server);
-    if (cmd->get_command() == "MODE")
+    else if (cmd->get_command() == "PART")
+        part(cmd, client, server);
+    else if (cmd->get_command() == "KICK")
+        kick(cmd, client, server);
+    else if (cmd->get_command() == "INVITE")
+        invite(cmd, client, server);
+    else if (cmd->get_command() == "TOPIC")
+        topic(cmd, client, server);
+    else if (cmd->get_command() == "MODE")
         mode(cmd, client, server);
+    else if (cmd->get_command() == "QUIT")
+        quit(cmd, client, server);
+    else
+        ERR_UNKNOWNCOMMAND(client, cmd);
 }
 
 bool checkFirstNumbSymbol(const std::string &str) {
@@ -102,7 +113,7 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
 
 	// if there are missing parameters
-	if (!hasCorrectParams(params)) return ERR_NeedMoreParams(cmd, client);
+	if (!hasCorrectParams(params)) return ERR_NEEDMOREPARAMS(cmd, client);
 
 	client->setUser(username);
 	client->setReal(paramsArray[3]);
@@ -127,85 +138,12 @@ void CmdHandler::pass(Command *cmd, Client *client, Server *server) {
 	// send pass success
 }
 
-void CmdHandler::pong(Command *cmd, Client *client)
+void CmdHandler::pong(Command *cmd, Client *client) {PONG(cmd, client);}
+
+void CmdHandler::quit(Command *cmd, Client *client, Server *server)
 {
-    if (cmd->get_params().empty())
-        ERR_NeedMoreParams(cmd, client);
-    else
-        PONG(cmd, client);
-}
-
-void CmdHandler::join(Command *cmd, Client *client, Server *server)
-{
-    int index = 0;
-    std::vector<std::string> names;
-    std::vector<std::string> passwords;
-
-    std::string params = cmd->get_params();
-
-    if (params.empty())
-    {
-        ERR_NeedMoreParams(cmd, client);
-        return ;
-    }
-    std::stringstream ss(cmd->get_params());
-    std::string str;
-    // get channels
-    ss >> str;
-    std::stringstream ss2(str);
-    while (std::getline(ss2, str, ','))
-    {
-        if (str[0] == '#' || str[0] == '&')
-        {
-            if ((str.find(0x20) == std::string::npos) && (str.find(0x07) == std::string::npos) && (str.find(0x2c) == std::string::npos))
-                names.push_back(str);
-        }
-        else
-            ERR_NoSuChChannel(client, str);
-    }
-    // get passwords
-    if(ss >> str)
-    {
-        std::stringstream ss3(str);
-        while (std::getline(ss3, str, ','))
-            passwords.push_back(str);
-    }
-
-    std::map<std::string, class Channel *> list = server->get_channel_list();
-    for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
-    {
-        try
-        {
-            list.at(*it);
-        }
-        catch (const std::out_of_range& e)
-        {
-            server->add_channel(*it, new Channel (*it));
-        }
-        list = server->get_channel_list();
-        if (list[*it]->get_user_limit() != -1 && list[*it]->get_nb_users() >= list[*it]->get_user_limit())
-            ERR_ChannelIsFull(client, list[*it]);
-        else if (((int)passwords.size() > index && list[*it]->get_key() != passwords[index]))
-            ERR_BadChannelKey(client, list[*it]);
-        else if (list[*it]->get_inviteOnly() == true)
-            ERR_InviteOnlyChan(client, list[*it]);
-        else
-        {
-            list[*it]->set_member(client);
-            Join(client, list[*it]);
-            if (!list[*it]->get_topic().empty())
-                RPL_TOPIC(client, list[*it]);
-            RPL_NAMREPLY(client, list[*it]);
-            RPL_ENDOFNAMES(client, list[*it]);
-        }
-        index++;
-    }
-}
-
-void CmdHandler::mode(Command *cmd, Client *client, Server *server)
-{
-    (void) cmd;
-    (void) client;
-    (void) server;
-    std::cout << "MODE\n";
+    std::string message = "Client Quit";
+    if (!cmd->get_params().empty())
+        message = cmd->get_params();
+    server->remove_client(client->getFd(), message);
 }
