@@ -38,6 +38,8 @@ class Server
     Channel * get_channel(std::string name) {for (std::map<std::string, class Channel *>::iterator it = channel_list.begin(); it != channel_list.end(); it++)if (it->first == name) return it->second; return NULL;}
     std::string get_pwd() const {return this->pwd;};
     std::map<std::string, class Channel *> get_channel_list() const {return this->channel_list;};
+    std::map<std::string, class Channel *>::iterator get_channel_begin() {return this->channel_list.begin();};
+    std::map<std::string, class Channel *>::iterator get_channel_end() {return this->channel_list.end();};
     int get_nb_connected_users() const {return this->pollfds.size() - 1;};
 
     void add_client();

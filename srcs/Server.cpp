@@ -143,13 +143,11 @@ void Server::remove_client(int fd, std::string msg)
 
 void Server::remove_channel(std::string name)
 {
-    std::cout << "deleting channel\n";
-    std::map<std::string, class Channel *> list = get_channel_list();
-    for (std::map<std::string, class Channel *>::iterator it_ch = list.begin(); it_ch != list.end(); it_ch++)
+    for (std::map<std::string, class Channel *>::iterator it_ch = channel_list.begin(); it_ch != channel_list.end(); it_ch++)
     {
-        std::cout << "iterating: " << it_ch->first << std::endl;
         if (it_ch->first == name)
         {
+            delete(it_ch->second);
             channel_list.erase(it_ch);
             return;
         }

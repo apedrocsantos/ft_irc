@@ -31,10 +31,10 @@ Command::Command(std::string str, Server *server)
         }
         if (!this->_prefix.empty())
             std::cout << "prefix: " << this->_prefix << ", ";
+        std::cout << server->it_pollfd->fd << " says: ";
+        std::cout << "command: " << this->_command << ", params: " << this->_params << std::endl;
         CmdHandler cl(this, server->client_list[server->it_pollfd->fd], server);
         delete[] server->buf[server->it_pollfd->fd];
         server->buf.erase(server->it_pollfd->fd);
-        std::cout << server->it_pollfd->fd << " says: ";
-        std::cout << "command: " << this->_command << ", params: " << this->_params << std::endl;
     }
 }

@@ -19,6 +19,7 @@ void PONG(Command *cmd, Client *client);
 void PART(Client *client, Channel *channel, std::string msg, Client *dest);
 void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest);
 void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest);
+void MODE(Client *client, std::string params, Client *dest);
 void QUIT(Client *client, std::string msg, Client *dest);
 
 

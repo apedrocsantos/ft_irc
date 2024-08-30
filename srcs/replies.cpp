@@ -12,13 +12,15 @@ void JOIN(Client *client, Channel *channel, Client *dest) {std::string output = 
 
 void PONG(Command *cmd, Client *client) {std::string output = ":ircserv PONG " + cmd->get_params() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
-void PART(Client *client, Channel *channel, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " " + msg + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
+void PART(Client *client, Channel *channel, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " :" + msg + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
-void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " KICK " + channel->get_name() + " " + user_to_kick + " " + msg + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
+void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " KICK " + channel->get_name() + " " + user_to_kick + " :" + msg + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
 void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " INVITE " + channel + " " + user_to_invite + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
-void QUIT(Client *client, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " QUIT " + msg + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
+void MODE(Client *client, std::string params, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " MODE " + params + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
+
+void QUIT(Client *client, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " QUIT :" + msg + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
 
 // REPLIES
 
