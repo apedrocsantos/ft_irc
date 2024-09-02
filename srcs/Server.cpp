@@ -121,6 +121,7 @@ void Server::remove_client(int fd, std::string msg) {
         }
         this->channel_list[*it]->remove_member(client_list[fd]->getNick());
     }
+	usedNicknames.erase(client_list[fd]->getNick());
     if (buf.find(fd) != buf.end()) {
         delete[] buf[it_pollfd->fd];
         buf.erase(it_pollfd->fd);
