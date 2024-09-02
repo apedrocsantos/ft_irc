@@ -49,6 +49,8 @@ void CmdHandler::nick(Command *cmd, Client *client, Server *server) {
 
 	if (newNick.empty()) return ERR_NoNicknameGiven(client);
 
+	if (client->getNick() == newNick) return ;
+
 	if (server->usedNicknames.find(newNick) != server->usedNicknames.end()) {
 		std::cout << "Error: Nickname is already in use." << std::endl;
 		return ERR_NickNameInUse(client);

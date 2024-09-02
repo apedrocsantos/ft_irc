@@ -48,8 +48,7 @@ Server::Server(char *port, std::string pwd) : _name("ircserv")
     std::cout << "Server running on port " << this->port << std::endl;
 }
 
-Server::~Server()
-{
+Server::~Server() {
     for (it_pollfd = this->pollfds.begin(); it_pollfd != this->pollfds.end(); it_pollfd++)
         close(it_pollfd->fd);
     this->pollfds.clear();
@@ -110,26 +109,22 @@ void Server::add_client()
     }
 }
 
-void Server::remove_client(int fd, std::string msg)
-{
+void Server::remove_client(int fd, std::string msg) {
     std::vector<int> client_fds;
     std::cout << "removing client\n";
-    for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++)
-    {
-        for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
-        {
-            if (std::find(client_fds.begin(), client_fds.end(), it_m->second->getFd()) == client_fds.end())
-            {
+    for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++) {
+        for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++) {
+            if (std::find(client_fds.begin(), client_fds.end(), it_m->second->getFd()) == client_fds.end()) {
                 client_fds.push_back(it_m->second->getFd());
                 QUIT(client_list[fd], msg, it_m->second);
             }
         }
         this->channel_list[*it]->remove_member(client_list[fd]->getNick());
     }
-    if (buf.find(fd) != buf.end())
-    {
+	usedNicknames.erase(client_list[fd]->getNick());
+    if (buf.find(fd) != buf.end()) {
         delete[] buf[it_pollfd->fd];
-        buf.erase(it_pollfd->fd);        
+        buf.erase(it_pollfd->fd);
     }
     close(fd);
     delete(client_list[fd]);
