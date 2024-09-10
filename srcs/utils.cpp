@@ -5,7 +5,7 @@
 	int i = 0;
 	while (port[i])
 	{
-		if (!isdigit(port[i]))
+		if (!std::isdigit(port[i]))
 			return (1);
 		i++;
 	}

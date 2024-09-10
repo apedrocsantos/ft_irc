@@ -10,16 +10,12 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
 
     std::stringstream ss(cmd->get_params());
     std::string str;
-    // get channels
     ss >> str;
     std::stringstream ss2(str);
     while (std::getline(ss2, str, ',')) // get channels
     {
-        if (str[0] == '#' || str[0] == '&') // If channel name is valid
-        {
-            if ((str.find(0x20) == std::string::npos) && (str.find(0x07) == std::string::npos) && (str.find(0x2c) == std::string::npos))
-                names.push_back(str);
-        }
+        if ((str[0] == '#' || str[0] == '&') && ((str.find(0x20) == std::string::npos) && (str.find(0x07) == std::string::npos) && (str.find(0x2c) == std::string::npos)))
+            names.push_back(str);
         else
             ERR_NOSUCHCHANNEL(client, str);
     }

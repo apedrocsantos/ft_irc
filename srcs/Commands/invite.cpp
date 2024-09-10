@@ -24,6 +24,8 @@ void CmdHandler::invite(Command *cmd, Client *client, Server *server)
     {
         INVITE(client, channel, user_to_invite, client_to_invite);
         RPL_INVITING(client, user_to_invite, channel);
+        if (client_to_invite->get_away() == true)
+        // RPL_AWAY(client_to_invite, client);
         return;
     }
     if (!list.at(channel)->is_member(client->getNick())) //Check if user is member of chan
@@ -43,5 +45,7 @@ void CmdHandler::invite(Command *cmd, Client *client, Server *server)
     }
     INVITE(client, channel, user_to_invite, client_to_invite);
     RPL_INVITING(client, user_to_invite, channel);
+    // if (client_to_invite->get_away() == true)
+        // RPL_AWAY(client_to_invite, client);
     list.at(channel)->add_to_invited(client_to_invite->getFd());
 }

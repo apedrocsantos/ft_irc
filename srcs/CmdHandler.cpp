@@ -2,13 +2,26 @@
 
 CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 {
-    if (cmd->get_command() == "NICK")
+    if (cmd->get_command() == "CAP")
+		return;
+	if (client->get_auth() == false && cmd->get_command() != "PASS")
+	{
+		ERROR(client, "User not authenticated. Closing connection");
+		server->remove_client(client->getFd(), "");
+		return;
+	}
+	if (client->get_registered() == false &&  (cmd->get_command() != "PASS" && cmd->get_command() != "NICK" && cmd->get_command() != "USER"))
+	{
+		ERR_NOTREGISTERED(client);
+		return;
+	}
+    else if (cmd->get_command() == "NICK")
 		nick(cmd, client, server);
 	else if (cmd->get_command() == "USER")
 		user(cmd, client, server);
-	if (cmd->get_command() == "PASS")
+	else if (cmd->get_command() == "PASS")
 		pass(cmd, client, server);
-    if (cmd->get_command() == "PING")
+    else if (cmd->get_command() == "PING")
 		pong(cmd, client);
     else if (cmd->get_command() == "JOIN")
         join(cmd, client, server);
@@ -24,6 +37,8 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
         mode(cmd, client, server);
     else if (cmd->get_command() == "QUIT")
         quit(cmd, client, server);
+    // else if (cmd->get_command() == "AWAY")
+    //     away(cmd, client);
     else
         ERR_UNKNOWNCOMMAND(client, cmd);
 }
@@ -41,6 +56,9 @@ void CmdHandler::nick(Command *cmd, Client *client, Server *server) {
 
 	while (ss >> word)
 		paramsArray.push_back(word);
+
+	if (paramsArray.empty())
+		return ERR_NEEDMOREPARAMS(cmd, client);
 
 	newNick = paramsArray[0];
 
@@ -61,6 +79,14 @@ void CmdHandler::nick(Command *cmd, Client *client, Server *server) {
 	else client->setOldNick(client->getNick());
 	client->setNick(newNick);
 	Nick(client);
+	if (!(client->getNick().empty() || client->getUsername().empty() || client->getRealname().empty()))
+	{
+		if (client->get_registered() == false)
+		{
+			client->set_registered(true);
+			RPL_WELCOME(client);
+		}
+	}
 
 	// Add the new nickname to the used set
 	server->usedNicknames.insert(newNick);
@@ -107,6 +133,9 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	while (ss >> word)
 		paramsArray.push_back(word);
 
+	if (paramsArray.empty())
+		return ERR_NEEDMOREPARAMS(cmd, client);
+
 	username = paramsArray[0];
 
 	// if the user is already registered
@@ -118,8 +147,12 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	client->setUser(username);
 	client->setReal(paramsArray[3]);
 
-	User(client);
-	RPL_WELCOME(client);
+	// User(client);
+	if (!(client->getNick().empty() || client->getUsername().empty() || client->getRealname().empty()))
+	{
+		client->set_registered(true);
+		RPL_WELCOME(client);
+	}
 
 	(void)server;
 }
@@ -132,17 +165,22 @@ void CmdHandler::pass(Command *cmd, Client *client, Server *server) {
 
 	ss >> pass;
 
-	if (server->get_pwd() != pass) std::cout << "some error idk, maybe ERR_PassWdMisMatch" << std::endl;
-
-	// continue
-	// send pass success
+	if (client->get_auth() == false)
+	{
+		if (server->get_pwd() != pass)
+			ERR_PASSWDMISMATCH(client);
+		else
+			client->set_auth(true);
+	}
+	else
+		ERR_AlreadyRegistered(client);
 }
 
 void CmdHandler::pong(Command *cmd, Client *client) {PONG(cmd, client);}
 
 void CmdHandler::quit(Command *cmd, Client *client, Server *server)
 {
-    std::string message = "Client Quit";
+    std::string message = ":Client Quit";
     if (!cmd->get_params().empty())
         message = cmd->get_params();
     server->remove_client(client->getFd(), message);

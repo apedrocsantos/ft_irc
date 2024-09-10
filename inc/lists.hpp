@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef RESPONSES_H
 #define RESPONSES_H
 

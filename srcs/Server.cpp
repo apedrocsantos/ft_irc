@@ -1,6 +1,6 @@
 #include "../inc/main.hpp"
 
-Server::Server(char *port, std::string pwd) : _name("ircserv")
+Server::Server(char *port, std::string pwd) : _name("ircserv"), command("", this)
 {
     int optval = 1;
     this->port = port;
@@ -112,18 +112,11 @@ void Server::add_client()
 
 void Server::remove_client(int fd, std::string msg)
 {
-    std::vector<int> client_fds;
     std::cout << "removing client\n";
     for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++)
     {
         for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
-        {
-            if (std::find(client_fds.begin(), client_fds.end(), it_m->second->getFd()) == client_fds.end())
-            {
-                client_fds.push_back(it_m->second->getFd());
                 QUIT(client_list[fd], msg, it_m->second);
-            }
-        }
         this->channel_list[*it]->remove_member(client_list[fd]->getNick());
     }
     if (buf.find(fd) != buf.end())
@@ -136,7 +129,6 @@ void Server::remove_client(int fd, std::string msg)
     client_list.erase(fd);
     remove_pollfd(fd);
     remove_pollfd(this->it_pollfd->fd);
-    // pollfds.erase(this->it_pollfd);
     this->it_pollfd = this->pollfds.begin();
     std::cout << "nb of clients connected to server: " << get_nb_connected_users() << std::endl;
 }
@@ -161,11 +153,7 @@ void Server::receive_msg()
     std::string str;
     int index;
 
-    try
-    {
-        buf.at(it_pollfd->fd);
-    }
-    catch (const std::exception& e)
+    if (buf.find(it_pollfd->fd) == buf.end())
     {
         buf[it_pollfd->fd] = new char[MESSAGE_BUFFER_SIZE];
         std::memset(buf[it_pollfd->fd], 0, MESSAGE_BUFFER_SIZE);
@@ -175,13 +163,8 @@ void Server::receive_msg()
     msg_size = recv(it_pollfd->fd, buf.at(it_pollfd->fd) + index, MESSAGE_BUFFER_SIZE - index, 0);
     if (msg_size <= 0)
     {
-        try {
-            client_list.at(it_pollfd->fd);
-        }
-        catch (std::exception& e)
-        {
+        if (client_list.find(it_pollfd->fd) == client_list.end())
             return ;
-        }
         remove_client(it_pollfd->fd, "Remote host closed the connection");
         return ;
     }
@@ -189,7 +172,6 @@ void Server::receive_msg()
     if (msg_size && (int) str.find('\n') != -1)
     {
         std::string str(buf.at(it_pollfd->fd));
-        this->command = new Command(str, this);
-        delete(this->command);
+        command = Command(str, this);
     }
 }

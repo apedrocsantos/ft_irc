@@ -23,11 +23,13 @@ void PART(Client *client, Channel *channel, std::string msg, Client *dest) {std:
 
 void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " KICK " + channel->get_name() + " " + user_to_kick + " :" + msg + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
-void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " INVITE " + channel + " " + user_to_invite + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
+void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " INVITE " + user_to_invite + " " + channel + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
 void MODE(Client *client, std::string params, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " MODE " + params + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
-void QUIT(Client *client, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " QUIT :" + msg + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
+void QUIT(Client *client, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " QUIT " + msg + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
+
+void ERROR(Client *client, std::string msg) {std::string output = "ERROR: " + msg + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 // REPLIES
 
@@ -44,6 +46,13 @@ void RPL_WELCOME(Client *client) {std::string output = std::string(":ircserv ") 
 void RPL_INVITING(Client *client, std::string user, std::string channel) {std::string output = std::string(":ircserv ") + "341 " + client->getNick() + " " + user + " " + channel + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 void RPL_CHANNELMODEIS(Client *client, Channel *channel) {std::string output = std::string(":ircserv ") + "324 " + client->getNick() + " " + channel->get_name() + " " + channel->get_modes() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void RPL_UNAWAY(Client *client) {std::string output = std::string(":ircserv ") + "305 " + client->getNick() + " :You are no longer marked as being away\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void RPL_NOAWAY(Client *client) {std::string output = std::string(":ircserv ") + "306 " + client->getNick() + " :You have been marked as being away\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void RPL_AWAY(Client *client, Client *dest) {std::string output = std::string(":ircserv ") + "301 " + client->getNick() + " " + dest->getNick() + " :" + client->get_away_msg() + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
+
 //ERRORS
 //* not done, idk how to do it yet
 void ERR_NickCollision(Client *client) {
@@ -92,3 +101,9 @@ void ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *channel) {s
 void ERR_USERONCHANNEL(Client *client, std::string nick, Channel *channel) {std::string output = std::string(":ircserv ") + "443 " + client->getNick() + " " + nick + " " + channel->get_name() + std::string(" :is already on channel\r\n"); send(client->getFd(), output.c_str(), output.size(), 0);}
 
 void ERR_NOSUCHNICK(Client *client, std::string nick) {std::string output = std::string(":ircserv ") + "401 " + client->getNick() + " " + nick + std::string(" :No such nick/channel\r\n"); send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void ERR_NOTREGISTERED(Client *client) {std::string output = std::string(":ircserv ") + "451 " + client->getNick() + " :You have not registered\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void ERR_PASSWDMISMATCH(Client *client) {std::string output = std::string(":ircserv ") + "464 " + client->getNick() + " :Wrong password.\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void ERR_UMODEUNKNOWNFLAG(Client *client, char flag) {std::string output = std::string(":ircserv ") + "501 " + client->getNick() + " :Unknown " + flag + " flag.\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
