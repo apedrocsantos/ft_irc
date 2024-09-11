@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef REPLIES_HPP
 #define REPLIES_HPP
 
@@ -16,12 +18,14 @@ class Channel;
 void Nick(Client *client);
 void User(Client *client);
 void JOIN(Client *client, Channel *channel, Client *dest);
+void PRIVMSG(Client *client, std::string dest_str, std::string message, Client *dest);
 void PONG(Command *cmd, Client *client);
 void PART(Client *client, Channel *channel, std::string msg, Client *dest);
 void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest);
 void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest);
-void MODE(Client *client, std::string params, Client *dest);
+void MODE(Client *client, Channel *channel, std::string params, Client *dest);
 void QUIT(Client *client, std::string msg, Client *dest);
+void ERROR(Client *client, std::string msg);
 
 
 // RPLs
@@ -33,6 +37,9 @@ void RPL_ENDOFNAMES(Client *client, Channel *channel);
 void RPL_WELCOME(Client *client);
 void RPL_INVITING(Client *client, std::string user, std::string channel);
 void RPL_CHANNELMODEIS(Client *client, Channel *channel);
+void RPL_UNAWAY(Client *client);
+void RPL_NOAWAY(Client *client);
+void RPL_AWAY(Client *client, Client *dest);
 
 //! ERRORS!
 
@@ -99,9 +106,9 @@ void ERR_CHANOPRIVSNEEDED(Client *client, Channel *channel);
 void ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *channel);
 void ERR_USERONCHANNEL(Client *client, std::string nick, Channel *channel);
 void ERR_NOSUCHNICK(Client *client, std::string nick);
+void ERR_NOTREGISTERED(Client *client);
+void ERR_PASSWDMISMATCH(Client *client);
+void ERR_UMODEUNKNOWNFLAG(Client *client, char flag);
+void ERR_NOTEXTTOSEND(Client *client);
 
-void ERR_BadChannelKey(Client *client, Channel *channel);
-void ERR_ChannelIsFull(Client *client, Channel *channel);
-void ERR_InviteOnlyChan(Client *client, Channel *channel);
-void ERR_NoSuChChannel(Client *client, std::string name);
 #endif

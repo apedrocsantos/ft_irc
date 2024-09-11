@@ -38,6 +38,9 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 
 	while (ss >> word)
 		paramsArray.push_back(word);
+	
+	if (paramsArray.empty())
+		return ERR_NEEDMOREPARAMS(cmd, client);
 
 	username = paramsArray[0];
 
@@ -50,8 +53,12 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	client->setUser(username);
 	client->setReal(paramsArray[3]);
 
-	User(client);
-	RPL_WELCOME(client);
+	//User(client);
+	if (!(client->getNick().empty() || client->getUsername().empty() || client->getRealname().empty()))
+	{
+		client->set_registered(true);
+		RPL_WELCOME(client);
+	}
 
 	(void)server;
 }

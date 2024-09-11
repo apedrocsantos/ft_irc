@@ -10,8 +10,13 @@ void CmdHandler::pass(Command *cmd, Client *client, Server *server) {
 
 	ss >> pass;
 
-	if (server->get_pwd() != pass) std::cout << "some error idk, maybe ERR_PassWdMisMatch" << std::endl;
-
-	// continue
-	// send pass success
+	if (client->get_auth() == false)
+	{
+		if (server->get_pwd() != pass)
+			ERR_PASSWDMISMATCH(client);
+		else
+			client->set_auth(true);
+	}
+	else
+		ERR_AlreadyRegistered(client);
 }

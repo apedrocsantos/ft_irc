@@ -3,6 +3,7 @@
 Command::Command(std::string str, Server *server)
 {
     char *str2;
+    std::vector<struct pollfd>::iterator it_pollfd;
 
     std::stringstream ss(str);
     std::string line;
@@ -33,8 +34,10 @@ Command::Command(std::string str, Server *server)
             std::cout << "prefix: " << this->_prefix << ", ";
         std::cout << server->it_pollfd->fd << " says: ";
         std::cout << "command: " << this->_command << ", params: " << this->_params << std::endl;
-        CmdHandler cl(this, server->client_list[server->it_pollfd->fd], server);
-        delete[] server->buf[server->it_pollfd->fd];
-        server->buf.erase(server->it_pollfd->fd);
+        std::map<int, class Client *> client_list = server->get_client_list();
+        CmdHandler cl(this, client_list[server->it_pollfd->fd], server);
+        std::map<int, char *> &buf = server->get_buf();
+        delete[] buf[server->it_pollfd->fd];
+        buf.erase(server->it_pollfd->fd);
     }
 }

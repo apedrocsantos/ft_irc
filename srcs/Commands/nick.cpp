@@ -16,6 +16,9 @@ void CmdHandler::nick(Command *cmd, Client *client, Server *server) {
 	while (ss >> word)
 		paramsArray.push_back(word);
 
+	if (paramsArray.empty())
+		return ERR_NEEDMOREPARAMS(cmd, client);
+
 	newNick = paramsArray[0];
 
 	// check if the first char of the nick is a number or symbol
@@ -37,6 +40,14 @@ void CmdHandler::nick(Command *cmd, Client *client, Server *server) {
 	else client->setOldNick(client->getNick());
 	client->setNick(newNick);
 	Nick(client);
+	if (!(client->getNick().empty() || client->getUsername().empty() || client->getRealname().empty()))
+	{
+		if (client->get_registered() == false)
+		{
+			client->set_registered(true);
+			RPL_WELCOME(client);
+		}
+	}
 
 	// Add the new nickname to the used set
 	server->usedNicknames.insert(newNick);
