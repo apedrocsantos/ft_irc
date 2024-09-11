@@ -2,18 +2,18 @@
 
 class CmdHandler;
 
-void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bool cur_mode, std::list<std::string> &etc, Command *cmd, Client *client, Channel *channel)
+void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bool cur_mode, std::list<std::string> &etc, Command *cmd, Client *client, Channel *channel, Server *server)
 {
     bool mode = true;
 
     for (int iterator = 0; iterator < (int)flags.size(); iterator++) // iterate flags
     {
-        if (cur_mode && etc.empty() && (flags[iterator] == 'l' || flags[iterator] == 'o'))
+        if (cur_mode && etc.empty() && (flags[iterator] == 'l'))
         {
             ERR_NEEDMOREPARAMS(cmd, client);
             continue;
         }
-        if (etc.empty() && (flags[iterator] == 'k'))
+        if (etc.empty() && (flags[iterator] == 'k' || flags[iterator] == 'o'))
         {
             ERR_NEEDMOREPARAMS(cmd, client);
             continue;
@@ -95,6 +95,35 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
             }
             case 'o':
             {
+                Client *client_to_change = server->get_client(etc.front());
+                if (client_to_change == NULL)
+                {
+                    ERR_NOSUCHNICK(client, etc.front());
+                    continue; 
+                }
+                if (cur_mode == true) // +o
+                {
+                    if (channel->is_member(etc.front()) && !channel->is_operator(client_to_change->getFd())) // if user to change is member of channel and is not operator
+                    {
+                        channel->set_operator(client_to_change->getFd());
+                        if (mode != cur_mode)
+                            o_flags += '+';
+                        o_flags += 'o';
+                        strings += etc.front() + " ";
+                    }
+                }
+                else // -o
+                {
+                    if (channel->is_operator(client_to_change->getFd()))
+                    {
+                        channel->remove_operator(client_to_change->getFd());
+                        if (mode != cur_mode)
+                            o_flags += '-';
+                        o_flags += 'o';
+                        strings += etc.front() + " ";
+                    }
+                }
+                channel->set_mode(flags[iterator], cur_mode); // set flag mode
                break; 
             }
             case 'l':
@@ -149,9 +178,6 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
     }
 }
 
-//TODO: invalid modes aren't blocked
-//TODO: only send MODE message if valid command
-
 void CmdHandler::mode(Command *cmd, Client *client, Server *server)
 {
     int iterator;
@@ -203,77 +229,13 @@ void CmdHandler::mode(Command *cmd, Client *client, Server *server)
     iterator = 3;
     while (std::getline(ss, str, ' ') && iterator--) // get remaining strings
         etc.push_back(str);
-    do_modes(flags, o_flags, strings, cur_mode, etc, cmd, client, channel_class);
+    do_modes(flags, o_flags, strings, cur_mode, etc, cmd, client, channel_class, server);
     if (!o_flags.empty() && o_flags[0] != '-')
         o_flags.insert(0, "+");
-    // for (iterator = 0; iterator < (int)flags.size(); iterator++) // iterate flags
-    // {
-    //     if (flags[iterator] == '+')
-    //         cur_mode = true;
-    //     if (flags[iterator] == '-')
-    //         cur_mode = false;
-    //     if (o_flags.empty())
-    //         o_flags += flags[iterator];
-    //     if (cur_mode && etc.empty() && (flags[iterator] == 'l' || flags[iterator] == 'o'))
-    //     {
-    //         ERR_NEEDMOREPARAMS(cmd, client);
-    //         continue;
-    //     }
-    //     if (etc.empty() && (flags[iterator] == 'k'))
-    //     {
-    //         ERR_NEEDMOREPARAMS(cmd, client);
-    //         continue;
-    //     }
-    //     if (flags[iterator] == 'i' || flags[iterator] == 't')
-    //         channel_class->set_mode(flags[iterator], cur_mode); // set flag mode
-    //     if (flags[iterator] == 'k' && cur_mode) // +k flag
-    //     {
-    //         channel_class->set_key(etc.front()); // add/change key
-    //         channel_class->set_mode(flags[iterator], cur_mode); // set flag mode
-    //     }
-    //     if (flags[iterator] == 'k' && !cur_mode && etc.front() == channel_class->get_key()) // -k flag
-    //     {
-    //         channel_class->set_mode('k', false); // set -k
-    //         channel_class->set_mode(flags[iterator], cur_mode); // set flag mode
-    //     }
-    //     if (flags[iterator] == 'l' && cur_mode) // +l flag
-    //     {
-    //         channel_class->set_limit(etc.front()); // set/change limit
-    //         channel_class->set_mode(flags[iterator], cur_mode); // set flag mode
-    //     }
-    //     if (flags[iterator] == 'o') // +/- o flag
-    //     {
-    //         if (channel_class->is_operator(client->getFd()))
-    //         {
-    //             Client *client_to_change = server->get_client(etc.front());
-    //             if (client_to_change == NULL)
-    //             {
-    //                 ERR_NOSUCHNICK(client, etc.front());
-    //                 continue; 
-    //             }
-    //             if (cur_mode == true)
-    //             {
-    //                 if (channel_class->is_member(etc.front()) && !channel_class->is_operator(client_to_change->getFd())) // if user to change is member of channel and is not operator
-    //                     channel_class->set_operator(client_to_change->getFd());
-    //             }
-    //             else
-    //             {
-    //                 if (channel_class->is_operator(client_to_change->getFd()))
-    //                     channel_class->remove_operator(client_to_change->getFd());
-    //             }
-    //             channel_class->set_mode(flags[iterator], cur_mode); // set flag mode
-    //         }
-    //     }
-    //     if (flags[iterator] == 'k' || flags[iterator] == 'l' || flags[iterator] == 'o')
-    //     {
-    //         output += etc.front();
-    //         etc.pop_front();
-    //     }
-    // }
     if (!o_flags.empty())
     {
         output = o_flags + " " + strings;
         for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = channel_class->get_members_begin(); it_members != channel_class->get_members_end(); it_members++)
-            MODE(client, output, it_members->second);
+            MODE(client, channel_class, output, it_members->second);
     }
 }

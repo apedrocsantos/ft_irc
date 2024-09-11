@@ -113,6 +113,7 @@ void Server::add_client()
 void Server::remove_client(int fd, std::string msg)
 {
     std::cout << "removing client\n";
+    close(fd);
     for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++)
     {
         for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
@@ -124,7 +125,6 @@ void Server::remove_client(int fd, std::string msg)
         delete[] buf[it_pollfd->fd];
         buf.erase(it_pollfd->fd);        
     }
-    close(fd);
     delete(client_list[fd]);
     client_list.erase(fd);
     remove_pollfd(fd);

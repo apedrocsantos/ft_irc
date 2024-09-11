@@ -17,6 +17,8 @@ void User(Client *client) {
 
 void JOIN(Client *client, Channel *channel, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " JOIN " + channel->get_name() + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
+void PRIVMSG(Client *client, std::string dest_str, std::string message, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PRIVMSG " + dest_str + " " + message + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
+
 void PONG(Command *cmd, Client *client) {std::string output = ":ircserv PONG " + cmd->get_params() + "\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 void PART(Client *client, Channel *channel, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " :" + msg + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
@@ -25,7 +27,7 @@ void KICK(Client *client, Channel *channel, std::string user_to_kick, std::strin
 
 void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " INVITE " + user_to_invite + " " + channel + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
-void MODE(Client *client, std::string params, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " MODE " + params + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
+void MODE(Client *client, Channel *channel, std::string params, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " MODE " + " " + channel->get_name() + " " + params + "\r\n"; send(dest->getFd(), output.c_str(), output.size(), 0);}
 
 void QUIT(Client *client, std::string msg, Client *dest) {std::string output = ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " QUIT " + msg + "\r\n"; if(dest->getFd() != client->getFd()) send(dest->getFd(), output.c_str(), output.size(), 0);}
 
@@ -107,3 +109,5 @@ void ERR_NOTREGISTERED(Client *client) {std::string output = std::string(":ircse
 void ERR_PASSWDMISMATCH(Client *client) {std::string output = std::string(":ircserv ") + "464 " + client->getNick() + " :Wrong password.\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
 
 void ERR_UMODEUNKNOWNFLAG(Client *client, char flag) {std::string output = std::string(":ircserv ") + "501 " + client->getNick() + " :Unknown " + flag + " flag.\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}
+
+void ERR_NOTEXTTOSEND(Client *client) {std::string output = std::string(":ircserv ") + "412 " + client->getNick() + " :No text to send\r\n"; send(client->getFd(), output.c_str(), output.size(), 0);}

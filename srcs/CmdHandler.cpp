@@ -25,6 +25,8 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 		pong(cmd, client);
     else if (cmd->get_command() == "JOIN")
         join(cmd, client, server);
+    else if (cmd->get_command() == "PRIVMSG")
+        privmsg(cmd, client, server);
     else if (cmd->get_command() == "PART")
         part(cmd, client, server);
     else if (cmd->get_command() == "KICK")

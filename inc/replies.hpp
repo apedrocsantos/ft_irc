@@ -18,11 +18,12 @@ class Channel;
 void Nick(Client *client);
 void User(Client *client);
 void JOIN(Client *client, Channel *channel, Client *dest);
+void PRIVMSG(Client *client, std::string dest_str, std::string message, Client *dest);
 void PONG(Command *cmd, Client *client);
 void PART(Client *client, Channel *channel, std::string msg, Client *dest);
 void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest);
 void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest);
-void MODE(Client *client, std::string params, Client *dest);
+void MODE(Client *client, Channel *channel, std::string params, Client *dest);
 void QUIT(Client *client, std::string msg, Client *dest);
 void ERROR(Client *client, std::string msg);
 
@@ -108,5 +109,6 @@ void ERR_NOSUCHNICK(Client *client, std::string nick);
 void ERR_NOTREGISTERED(Client *client);
 void ERR_PASSWDMISMATCH(Client *client);
 void ERR_UMODEUNKNOWNFLAG(Client *client, char flag);
+void ERR_NOTEXTTOSEND(Client *client);
 
 #endif
