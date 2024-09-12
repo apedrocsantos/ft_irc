@@ -35,9 +35,11 @@ Command::Command(std::string str, Server *server)
         std::cout << server->it_pollfd->fd << " says: ";
         std::cout << "command: " << this->_command << ", params: " << this->_params << std::endl;
         std::map<int, class Client *> client_list = server->get_client_list();
+		if (client_list.find(server->it_pollfd->fd) == client_list.end())
+			return;
         CmdHandler cl(this, client_list[server->it_pollfd->fd], server);
-        std::map<int, char *> &buf = server->get_buf();
-        delete[] buf[server->it_pollfd->fd];
-        buf.erase(server->it_pollfd->fd);
+        std::map<int, char *> &in_buf = server->get_buf();
+        delete[] in_buf[server->it_pollfd->fd];
+        in_buf.erase(server->it_pollfd->fd);
     }
 }

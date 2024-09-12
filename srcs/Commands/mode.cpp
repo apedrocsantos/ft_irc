@@ -10,12 +10,12 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
     {
         if (cur_mode && etc.empty() && (flags[iterator] == 'l'))
         {
-            ERR_NEEDMOREPARAMS(cmd, client);
+            server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
             continue;
         }
         if (etc.empty() && (flags[iterator] == 'k' || flags[iterator] == 'o'))
         {
-            ERR_NEEDMOREPARAMS(cmd, client);
+            server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
             continue;
         }
         switch(flags[iterator])
@@ -98,7 +98,7 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
                 Client *client_to_change = server->get_client(etc.front());
                 if (client_to_change == NULL)
                 {
-                    ERR_NOSUCHNICK(client, etc.front());
+                    server->add_to_out_buf(client->getFd(), ERR_NOSUCHNICK(client, etc.front()));
                     continue; 
                 }
                 if (cur_mode == true) // +o
@@ -195,37 +195,22 @@ void CmdHandler::mode(Command *cmd, Client *client, Server *server)
     std::stringstream ss(cmd->get_params());
     std::getline(ss, channel, ' ');
     if (!server->channel_exists(channel)) // check if channel exists
-    {
-        ERR_NOSUCHCHANNEL(client, channel);
-        return;
-    }
+        return server->add_to_out_buf(client->getFd(), ERR_NOSUCHCHANNEL(client, channel));
     Channel *channel_class = server->get_channel(channel);
     std::getline(ss, flags, ' '); // get flags
     if (flags.empty())
-    {
-        RPL_CHANNELMODEIS(client, channel_class);
-        return;
-    }
+        return server->add_to_out_buf(client->getFd(), RPL_CHANNELMODEIS(client, channel_class));
     iterator = 0;
     while (flags[iterator]) // check if flag is valid
     {
         if (itkol.find(flags[iterator]) == std::string::npos)
-        {
-            ERR_UMODEUNKNOWNFLAG(client, flags[iterator]);
-            return;
-        }
+            return server->add_to_out_buf(client->getFd(), ERR_UMODEUNKNOWNFLAG(client, flags[iterator]));
         iterator++;
     }
     if (!channel_class->is_member(client->getNick())) // check if user is member of channel
-    {
-        ERR_NOTONCHANNEL(client, channel);
-        return;
-    }
+        return server->add_to_out_buf(client->getFd(), ERR_NOTONCHANNEL(client, channel));
     if (!channel_class->is_operator(client->getFd())) // check if user is op
-    {
-        ERR_CHANOPRIVSNEEDED(client, channel_class);
-        return;
-    }
+        return server->add_to_out_buf(client->getFd(), ERR_CHANOPRIVSNEEDED(client, channel_class));
     iterator = 3;
     while (std::getline(ss, str, ' ') && iterator--) // get remaining strings
         etc.push_back(str);
@@ -236,6 +221,6 @@ void CmdHandler::mode(Command *cmd, Client *client, Server *server)
     {
         output = o_flags + " " + strings;
         for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = channel_class->get_members_begin(); it_members != channel_class->get_members_end(); it_members++)
-            MODE(client, channel_class, output, it_members->second);
+            server->add_to_out_buf(it_members->second->getFd(), MODE(client, channel_class, output));
     }
 }

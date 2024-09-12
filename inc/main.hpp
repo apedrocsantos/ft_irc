@@ -41,7 +41,4 @@
 #define NICKNAME_SIZE 16
 #define CHANNEL_NAME_SIZE 50
 
-// CHANGE
-extern std::set<std::string> usedNicknames;
-
 #endif

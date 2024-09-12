@@ -18,6 +18,7 @@ class Client
 	bool _is_away;
 	bool _registered;
 	bool _auth;
+	bool _disconnect;
 	std::string _away_msg;
 	std::vector<std::string> _channels;
 
@@ -34,6 +35,7 @@ class Client
 	void set_away_msg(std::string msg) {_away_msg = msg;};
 	void set_registered(bool reg) {_registered = reg;};
 	void set_auth(bool reg) {_auth = reg;};
+	void set_disconnect(bool what) {_disconnect = what;};
 
 	// Getters
 	int getFd() const {return _fd;};
@@ -43,12 +45,14 @@ class Client
 	std::string getHostname() const {return this->_hostname;};
 	std::string getUsername() const {return this->_username;};
 	std::string getRealname() const {return this->_realname;};
+	std::vector<std::string> get_channels() {return this->_channels;};
 	std::vector<std::string>::iterator get_channels_begin() {return this->_channels.begin();};
 	std::vector<std::string>::iterator get_channels_end() {return this->_channels.end();};
 	bool get_away() const {return _is_away;};
 	bool get_registered() const {return _registered;};
 	bool get_auth() const {return _auth;};
 	std::string get_away_msg() const {return _away_msg;};
+	bool get_disconnect() {return _disconnect;};
 
 	void add_channel(std::string name) {this->_channels.push_back(name);};
 	void remove_channel(std::string &name);

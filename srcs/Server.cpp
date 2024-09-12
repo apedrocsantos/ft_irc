@@ -80,6 +80,8 @@ void Server::start()
             // message received
             else if (it_pollfd->revents & POLLIN)
                 receive_msg();
+			else if (it_pollfd->revents & POLLOUT)
+                send_msg();
         }
     }
 }
@@ -96,10 +98,11 @@ void Server::add_client()
         std::cerr << "Unable to establish connection to client.\n";
     try
     {
-        pollfd clientfd = {this->new_fd, POLLIN, 0};
+        pollfd clientfd = {this->new_fd, POLLIN | POLLOUT, 0};
         this->pollfds.push_back(clientfd);
         char *hostname = inet_ntoa(addr.sin_addr);
         client_list.insert(std::make_pair(this->new_fd, new Client(this->new_fd, std::string(hostname))));
+		// out_buf.insert(std::make_pair(this->socketId, ""));
         std::cout << "connected users: " << get_nb_connected_users() << std::endl;
     }
     catch(const std::exception& e)
@@ -112,22 +115,22 @@ void Server::add_client()
 void Server::remove_client(int fd, std::string msg)
 {
     std::cout << "removing client\n";
-    close(fd);
     for (std::vector<std::string>::iterator it = client_list[fd]->get_channels_begin(); it != client_list[fd]->get_channels_end(); it++)
     {
         for (std::list<std::pair<std::string*, class Client *> >::iterator it_m = channel_list[*it]->get_members_begin(); it_m != channel_list[*it]->get_members_end(); it_m++)
-                QUIT(client_list[fd], msg, it_m->second);
+			if (it_m->second->getFd() != fd)
+                add_to_out_buf(it_m->second->getFd(),QUIT(client_list[fd], msg));
         this->channel_list[*it]->remove_member(client_list[fd]->getNick());
     }
+	close(fd);
 	usedNicknames.erase(client_list[fd]->getNick());
-    if (buf.find(fd) != buf.end()) {
-        delete[] buf[it_pollfd->fd];
-        buf.erase(it_pollfd->fd);
+    if (in_buf.find(fd) != in_buf.end()) {
+        delete[] in_buf[it_pollfd->fd];
+        in_buf.erase(it_pollfd->fd);
     }
     delete(client_list[fd]);
     client_list.erase(fd);
     remove_pollfd(fd);
-    remove_pollfd(this->it_pollfd->fd);
     this->it_pollfd = this->pollfds.begin();
     std::cout << "nb of clients connected to server: " << get_nb_connected_users() << std::endl;
 }
@@ -152,14 +155,14 @@ void Server::receive_msg()
     std::string str;
     int index;
 
-    if (buf.find(it_pollfd->fd) == buf.end())
+    if (in_buf.find(it_pollfd->fd) == in_buf.end())
     {
-        buf[it_pollfd->fd] = new char[MESSAGE_BUFFER_SIZE];
-        std::memset(buf[it_pollfd->fd], 0, MESSAGE_BUFFER_SIZE);
+        in_buf[it_pollfd->fd] = new char[MESSAGE_BUFFER_SIZE];
+        std::memset(in_buf[it_pollfd->fd], 0, MESSAGE_BUFFER_SIZE);
     }
-    str = buf[it_pollfd->fd];
+    str = in_buf[it_pollfd->fd];
     index = str.size();
-    msg_size = recv(it_pollfd->fd, buf.at(it_pollfd->fd) + index, MESSAGE_BUFFER_SIZE - index, 0);
+    msg_size = recv(it_pollfd->fd, in_buf.at(it_pollfd->fd) + index, MESSAGE_BUFFER_SIZE - index, 0);
     if (msg_size <= 0)
     {
         if (client_list.find(it_pollfd->fd) == client_list.end())
@@ -167,10 +170,34 @@ void Server::receive_msg()
         remove_client(it_pollfd->fd, "Remote host closed the connection");
         return ;
     }
-    str = buf[it_pollfd->fd];
+    str = in_buf[it_pollfd->fd];
     if (msg_size && (int) str.find('\n') != -1)
     {
-        std::string str(buf.at(it_pollfd->fd));
+        std::string str(in_buf.at(it_pollfd->fd));
         command = Command(str, this);
     }
+}
+
+void Server::send_msg()
+{
+    int msg_size;
+    std::string str;
+
+	if (client_list.find(it_pollfd->fd) == client_list.end())
+		return;
+    if (out_buf.find(it_pollfd->fd) == out_buf.end()) // Nothing to send
+		return;
+    str = out_buf[it_pollfd->fd];
+    msg_size = send(it_pollfd->fd, str.c_str(), str.size(), 0);
+    if (msg_size < 0)
+	{
+		std::cout << "send error: " << strerror(errno) << std::endl;
+		return;
+	}
+    if (msg_size != (int)str.size())
+		out_buf[it_pollfd->fd] = out_buf[it_pollfd->fd].substr(msg_size, out_buf[it_pollfd->fd].size() - msg_size);
+	else
+		out_buf.erase(out_buf.find(it_pollfd->fd));
+	if (client_list[it_pollfd->fd]->get_disconnect() == true) // remove client after sending error message
+		remove_client(it_pollfd->fd, "");
 }

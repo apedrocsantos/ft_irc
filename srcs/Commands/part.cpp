@@ -15,20 +15,18 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
     while (std::getline(ss2, str, ',')) // get channels
         names.push_back(str);
     if (std::getline(ss, str)) // get message
-        message = str;
-
+		message = str;
+	if (!message.empty() && message[0] != ':')
+		message.insert(message.begin(), ':');
     std::map<std::string, class Channel *> list = server->get_channel_list();
     for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
     {
         if (list.find(*it) == list.end()) // check if channel exists
-        {
-            ERR_NOSUCHCHANNEL(client, *it);;
-            return;
-        }
+            return server->add_to_out_buf(client->getFd(), ERR_NOSUCHCHANNEL(client, *it));
         if (list.at(*it)->member_exists(client->getNick())) // check if user is member of channel
         {
             for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
-                PART(client, list.at(*it), message, it_members->second); // send part to all members of channel
+                server->add_to_out_buf(it_members->second->getFd(), PART(client, list.at(*it), message)); // send part to all members of channel
             client->remove_channel(*it); // remove channel from client channel list
             list.at(*it)->remove_member(client->getNick()); // remove client from channel member list
             list.at(*it)->remove_operator(client->getFd()); // remove client from channel op list
@@ -36,6 +34,6 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
                 server->remove_channel(*it);
         }
         else
-            ERR_NOTONCHANNEL(client, *it);
+            server->add_to_out_buf(client->getFd(), ERR_NOTONCHANNEL(client, *it));
     }
 }

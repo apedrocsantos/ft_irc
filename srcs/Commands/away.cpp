@@ -2,15 +2,17 @@
 
 class CmdHandler;
 
-void CmdHandler::away(Command *cmd, Client *client)
+void CmdHandler::away(Command *cmd, Client *client, Server *server)
 {
     if (cmd->get_params().empty())
     {
         client->set_away(false);
-        RPL_UNAWAY(client);
-        return;
+        return server->add_to_out_buf(client->getFd(), RPL_UNAWAY(client));
     }
     client->set_away(true);
-    client->set_away_msg(cmd->get_params());
-    RPL_NOAWAY(client);
+	std::string message = cmd->get_params();
+	if (message[0] != ':')
+		message.insert(message.begin(), ':');
+    client->set_away_msg(message);
+    server->add_to_out_buf(client->getFd(), RPL_NOAWAY(client));
 }

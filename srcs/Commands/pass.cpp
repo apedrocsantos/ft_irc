@@ -13,10 +13,10 @@ void CmdHandler::pass(Command *cmd, Client *client, Server *server) {
 	if (client->get_auth() == false)
 	{
 		if (server->get_pwd() != pass)
-			ERR_PASSWDMISMATCH(client);
+			server->add_to_out_buf(client->getFd(), ERR_PASSWDMISMATCH(client));
 		else
 			client->set_auth(true);
 	}
 	else
-		ERR_AlreadyRegistered(client);
+		server->add_to_out_buf(client->getFd(), ERR_AlreadyRegistered(client));
 }

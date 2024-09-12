@@ -15,31 +15,31 @@ class Channel;
  * :<OLDNICK/CURRENTNICK>!~<user>@<IP> NICK :<NEWNICK>
  * @param client The user that ran the cmd
  */
-void Nick(Client *client);
-void User(Client *client);
-void JOIN(Client *client, Channel *channel, Client *dest);
-void PRIVMSG(Client *client, std::string dest_str, std::string message, Client *dest);
-void PONG(Command *cmd, Client *client);
-void PART(Client *client, Channel *channel, std::string msg, Client *dest);
-void KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg, Client *dest);
-void INVITE(Client *client, std::string channel, std::string user_to_invite, Client *dest);
-void MODE(Client *client, Channel *channel, std::string params, Client *dest);
-void QUIT(Client *client, std::string msg, Client *dest);
-void ERROR(Client *client, std::string msg);
+std::string Nick(Client *client);
+std::string User(Client *client);
+std::string JOIN(Client *client, Channel *channel);
+std::string PRIVMSG(Client *client, std::string dest_str, std::string message);
+std::string PONG(Command *cmd);
+std::string PART(Client *client, Channel *channel, std::string msg);
+std::string KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg);
+std::string INVITE(Client *client, std::string channel, std::string user_to_invite);
+std::string MODE(Client *client, Channel *channel, std::string params);
+std::string QUIT(Client *client, std::string msg);
+std::string ERROR(std::string msg);
 
 
 // RPLs
 
-void RPL_TOPIC(Client *client, Channel *channel);
-void RPL_NOTOPIC(Client *client, Channel *channel);
-void RPL_NAMREPLY(Client *client, Channel *channel);
-void RPL_ENDOFNAMES(Client *client, Channel *channel);
-void RPL_WELCOME(Client *client);
-void RPL_INVITING(Client *client, std::string user, std::string channel);
-void RPL_CHANNELMODEIS(Client *client, Channel *channel);
-void RPL_UNAWAY(Client *client);
-void RPL_NOAWAY(Client *client);
-void RPL_AWAY(Client *client, Client *dest);
+std::string RPL_TOPIC(Client *client, Channel *channel);
+std::string RPL_NOTOPIC(Client *client, Channel *channel);
+std::string RPL_NAMREPLY(Client *client, Channel *channel);
+std::string RPL_ENDOFNAMES(Client *client, Channel *channel);
+std::string RPL_WELCOME(Client *client);
+std::string RPL_INVITING(Client *client, std::string user, std::string channel);
+std::string RPL_CHANNELMODEIS(Client *client, Channel *channel);
+std::string RPL_UNAWAY(Client *client);
+std::string RPL_NOAWAY(Client *client);
+std::string RPL_AWAY(Client *client, Client *dest);
 
 //! ERRORS!
 
@@ -49,14 +49,14 @@ void RPL_AWAY(Client *client, Client *dest);
  * @param cmd The command
  * @param client The user that ran the cmd
  */
-void ERR_NickCollision(Client *client);
+std::string ERR_NickCollision(Client *client);
 
 /**
  * Returned when a NICK command cannot be successfully completed as the desired nickname is already in use on the network.
  * The text used in the last param of this message may vary.
  * @param client The user that ran the cmd
  */
-void ERR_NickNameInUse(Client *client);
+std::string ERR_NickNameInUse(Client *client);
 
 /**
  * Returned when a NICK command cannot be successfully completed as the desired nickname contains characters that are disallowed by the server.
@@ -64,20 +64,20 @@ void ERR_NickNameInUse(Client *client);
  * The text used in the last param of this message may vary.
  * @param client The user that ran the cmd
  */
-void ERR_ErroneusNickName(Client *client);
+std::string ERR_ErroneusNickName(Client *client);
 
 /**
  * Returned when a nickname parameter is expected for a command but isn’t given.
  * @param client The user that ran the cmd
  */
-void ERR_NoNicknameGiven(Client * client);
+std::string ERR_NoNicknameGiven(Client * client);
 
 /**
  * Returned when a client command cannot be parsed because not enough parameters were supplied.
  * The text used in the last param of this message may vary.
  * @param client The user that ran the cmd
  */
-void ERR_NeedMoreParams(Command *cmd, Client *client);
+std::string ERR_NeedMoreParams(Command *cmd, Client *client);
 
 /**
  * Returned when a client tries to change a detail that can only be set during registration
@@ -85,7 +85,7 @@ void ERR_NeedMoreParams(Command *cmd, Client *client);
  * The text used in the last param of this message varies.
  * @param client The user that ran the cmd
  */
-void ERR_AlreadyRegistered(Client *client);
+std::string ERR_AlreadyRegistered(Client *client);
 
 
 /**
@@ -93,22 +93,22 @@ void ERR_AlreadyRegistered(Client *client);
  * Servers offer only a limited subset of commands until clients are properly registered to the server.
  * The text used in the last param of this message may vary.
  */
-//void ERR_NotRegistered(Client *client)
+//std::string ERR_NotRegistered(Client *client)
 
-void ERR_NEEDMOREPARAMS(Command *cmd, Client *client);
-void ERR_BADCHANNELKEY(Client *client, Channel *channel);
-void ERR_CHANNELISFULL(Client *client, Channel *channel);
-void ERR_INVITEONLYCHAN(Client *client, Channel *channel);
-void ERR_NOSUCHCHANNEL(Client *client, std::string name);
-void ERR_NOTONCHANNEL(Client *client, std::string name);
-void ERR_UNKNOWNCOMMAND(Client *client, Command *cmd);
-void ERR_CHANOPRIVSNEEDED(Client *client, Channel *channel);
-void ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *channel);
-void ERR_USERONCHANNEL(Client *client, std::string nick, Channel *channel);
-void ERR_NOSUCHNICK(Client *client, std::string nick);
-void ERR_NOTREGISTERED(Client *client);
-void ERR_PASSWDMISMATCH(Client *client);
-void ERR_UMODEUNKNOWNFLAG(Client *client, char flag);
-void ERR_NOTEXTTOSEND(Client *client);
+std::string ERR_NEEDMOREPARAMS(Command *cmd, Client *client);
+std::string ERR_BADCHANNELKEY(Client *client, Channel *channel);
+std::string ERR_CHANNELISFULL(Client *client, Channel *channel);
+std::string ERR_INVITEONLYCHAN(Client *client, Channel *channel);
+std::string ERR_NOSUCHCHANNEL(Client *client, std::string name);
+std::string ERR_NOTONCHANNEL(Client *client, std::string name);
+std::string ERR_UNKNOWNCOMMAND(Client *client, Command *cmd);
+std::string ERR_CHANOPRIVSNEEDED(Client *client, Channel *channel);
+std::string ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *channel);
+std::string ERR_USERONCHANNEL(Client *client, std::string nick, Channel *channel);
+std::string ERR_NOSUCHNICK(Client *client, std::string nick);
+std::string ERR_NOTREGISTERED(Client *client);
+std::string ERR_PASSWDMISMATCH(Client *client);
+std::string ERR_UMODEUNKNOWNFLAG(Client *client, char flag);
+std::string ERR_NOTEXTTOSEND(Client *client);
 
 #endif

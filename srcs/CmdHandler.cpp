@@ -2,17 +2,24 @@
 
 CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 {
+	if (!client)
+		return;
+	if (cmd->get_command() == "QUIT")
+	{
+        quit(cmd, client, server);
+		return;
+	}
     if (cmd->get_command() == "CAP")
 		return;
 	if (client->get_auth() == false && cmd->get_command() != "PASS")
 	{
-		ERROR(client, "User not authenticated. Closing connection");
-		server->remove_client(client->getFd(), "");
+		server->add_to_out_buf(client->getFd(),ERROR("User not authenticated. Closing connection"));
+		client->set_disconnect(true);
 		return;
 	}
 	if (client->get_registered() == false &&  (cmd->get_command() != "PASS" && cmd->get_command() != "NICK" && cmd->get_command() != "USER"))
 	{
-		ERR_NOTREGISTERED(client);
+		server->add_to_out_buf(client->getFd(),ERR_NOTREGISTERED(client));
 		return;
 	}
     if (cmd->get_command() == "NICK")
@@ -22,7 +29,7 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
 	else if (cmd->get_command() == "PASS")
 		pass(cmd, client, server);
     else if (cmd->get_command() == "PING")
-		pong(cmd, client);
+		pong(cmd, client, server);
     else if (cmd->get_command() == "JOIN")
         join(cmd, client, server);
     else if (cmd->get_command() == "PRIVMSG")
@@ -39,17 +46,17 @@ CmdHandler::CmdHandler(Command *cmd, Client *client, Server *server)
         mode(cmd, client, server);
     else if (cmd->get_command() == "QUIT")
         quit(cmd, client, server);
-    // else if (cmd->get_command() == "AWAY")
-    //     away(cmd, client);
+    else if (cmd->get_command() == "AWAY")
+        away(cmd, client, server);
     else
-        ERR_UNKNOWNCOMMAND(client, cmd);
+        server->add_to_out_buf(client->getFd(),ERR_UNKNOWNCOMMAND(client, cmd));
 }
 
-void CmdHandler::pong(Command *cmd, Client *client) {PONG(cmd, client);}
+void CmdHandler::pong(Command *cmd, Client *client, Server *server) {server->add_to_out_buf(client->getFd(),PONG(cmd));}
 
 void CmdHandler::quit(Command *cmd, Client *client, Server *server)
 {
-    std::string message = ":Client Quit";
+    std::string message = "Client Quit";
     if (!cmd->get_params().empty())
         message = cmd->get_params();
     server->remove_client(client->getFd(), message);

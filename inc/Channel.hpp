@@ -9,7 +9,6 @@ class Channel {
     std::string _name;
     std::string _topic;
     std::string _key;
-    // bool  _inviteOnly;
     int _user_limit;
     std::list<std::pair<std::string*, class Client *> > _members;
     std::vector<int> _invited_members;
@@ -24,7 +23,6 @@ class Channel {
     std::string get_name() const {return this->_name;}
     std::string get_topic() const {return this->_topic;}
     std::string get_key() const {return this->_key;}
-    // bool get_inviteOnly() {return this->_inviteOnly;}
     int get_user_limit() const {return this->_user_limit;}
     int get_nb_users() const {return _members.size();}
     std::string get_members();

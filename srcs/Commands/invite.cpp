@@ -13,39 +13,27 @@ void CmdHandler::invite(Command *cmd, Client *client, Server *server)
     std::stringstream ss(cmd->get_params());
     std::getline(ss, user_to_invite, ' '); // get user to invite
     if (server->get_client(user_to_invite) == NULL)
-    {
-        ERR_NOSUCHNICK(client, user_to_invite);
-        return;
-    }
+        return server->add_to_out_buf(client->getFd(),ERR_NOSUCHNICK(client, user_to_invite));
     std::getline(ss, channel, ' '); // get channel
     Client *client_to_invite = server->get_client(user_to_invite);
     std::map<std::string, class Channel *> list = server->get_channel_list();
-    if (!server->channel_exists(channel)) // check if channel exists
+    if (!server->channel_exists(channel)) // check if channel doesn't exist
     {
-        INVITE(client, channel, user_to_invite, client_to_invite);
-        RPL_INVITING(client, user_to_invite, channel);
+        server->add_to_out_buf(client_to_invite->getFd(),INVITE(client, channel, user_to_invite));
+        server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));
         if (client_to_invite->get_away() == true)
-        // RPL_AWAY(client_to_invite, client);
+        	server->add_to_out_buf(client->getFd(), RPL_AWAY(client_to_invite, client));
         return;
     }
     if (!list.at(channel)->is_member(client->getNick())) //Check if user is member of chan
-    {
-        ERR_NOTONCHANNEL(client, channel);
-        return ;
-    }
+        return server->add_to_out_buf(client->getFd(), ERR_NOTONCHANNEL(client, channel));
     if (list.at(channel)->get_flag('i') && !list.at(channel)->is_operator(client->getFd())) //Check if flag +i and user is op in chan
-    {
-        ERR_CHANOPRIVSNEEDED(client, list.at(channel));
-        return ;
-    }
+        return server->add_to_out_buf(client->getFd(), ERR_CHANOPRIVSNEEDED(client, list.at(channel)));
     if (list.at(channel)->is_member(user_to_invite)) //check if user to be invited is on channel
-    {
-        ERR_USERONCHANNEL(client, user_to_invite, list.at(channel));
-        return ;
-    }
-    INVITE(client, channel, user_to_invite, client_to_invite);
-    RPL_INVITING(client, user_to_invite, channel);
-    // if (client_to_invite->get_away() == true)
-        // RPL_AWAY(client_to_invite, client);
+        return server->add_to_out_buf(client->getFd(), ERR_USERONCHANNEL(client, user_to_invite, list.at(channel)));
+    server->add_to_out_buf(client_to_invite->getFd(), INVITE(client, channel, user_to_invite));
+    server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));
+    if (client_to_invite->get_away() == true)
+        server->add_to_out_buf(client->getFd(), RPL_AWAY(client_to_invite, client));
     list.at(channel)->add_to_invited(client_to_invite->getFd());
 }

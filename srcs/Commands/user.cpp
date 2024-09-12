@@ -19,7 +19,7 @@ bool hasCorrectParams(const std::string& str) {
 	std::vector<std::string> parameters = splitString(str);
 
 	// Check if there are exactly four parameters
-	if (parameters.size() != 4) return false;
+	if (parameters.size() < 4) return false;
 
 	// checks if the realname starts with the ":"
 	if (parameters[3][0] != ':') return false;
@@ -34,21 +34,32 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	std::string params = cmd->get_params();
 	std::vector<std::string> paramsArray;
 	std::stringstream ss(params);
-	std::string word, username;
+	std::string word, username, realname;
 
 	while (ss >> word)
+	{
 		paramsArray.push_back(word);
+		if (paramsArray.size() == 3)
+		{
+			std::getline(ss, realname);
+			if (realname.size() > 0)
+				paramsArray.push_back(realname);
+			break;
+		}
+	}
 	
 	if (paramsArray.empty())
-		return ERR_NEEDMOREPARAMS(cmd, client);
+		return server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
 
 	username = paramsArray[0];
 
 	// if the user is already registered
-	if (!client->getUsername().empty()) return ERR_AlreadyRegistered(client);
+	if (!client->getUsername().empty())
+		return server->add_to_out_buf(client->getFd(), ERR_AlreadyRegistered(client));
 
 	// if there are missing parameters
-	if (!hasCorrectParams(params)) return ERR_NEEDMOREPARAMS(cmd, client);
+	if (!hasCorrectParams(params))
+		return server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
 
 	client->setUser(username);
 	client->setReal(paramsArray[3]);
@@ -57,8 +68,7 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 	if (!(client->getNick().empty() || client->getUsername().empty() || client->getRealname().empty()))
 	{
 		client->set_registered(true);
-		RPL_WELCOME(client);
+		server->add_to_out_buf(client->getFd(), RPL_WELCOME(client));
 	}
 
-	(void)server;
 }
