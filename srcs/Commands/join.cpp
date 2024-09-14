@@ -50,7 +50,7 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
         {
             list[*it]->set_member(client); // add client to member list
             for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = list[*it]->get_members_begin(); it_members != list[*it]->get_members_end(); it_members++)
-                server->add_to_out_buf(it_members->second->getFd(), JOIN(client, list[*it])); // msg to all channel members with new member
+            	server->add_to_out_buf(it_members->second->getFd(), JOIN(client, list[*it])); // msg to all channel members with new member
             client->add_channel(*it); // add channel to member list of channels
             list[*it]->remove_from_invited(client->getFd()); // remove member from invited
             if (!list[*it]->get_topic().empty()) // display topic

@@ -2,7 +2,7 @@
 
 Channel::Channel(std::string name) : _name(name), _user_limit(-1)
 {
-    std::cout << "Creating channel " << this->_name << std::endl;
+    std::cout << "Creating channel {" << this->_name << "}\n";
     _flags.insert(_flags.end(), std::make_pair('i', false));
     _flags.insert(_flags.end(), std::make_pair('t', false));
     _flags.insert(_flags.end(), std::make_pair('k', false));

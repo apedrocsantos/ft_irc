@@ -2,12 +2,10 @@
 
 class CmdHandler;
 
-// TODO: RPL_AWAY)
-// TODO: colliding info: RFCs vs modern irc
 void CmdHandler::invite(Command *cmd, Client *client, Server *server)
 {
     std::string channel;
-    std::string str;
+    // std::string str;
     std::string user_to_invite;
 
     std::stringstream ss(cmd->get_params());
@@ -17,19 +15,20 @@ void CmdHandler::invite(Command *cmd, Client *client, Server *server)
     std::getline(ss, channel, ' '); // get channel
     Client *client_to_invite = server->get_client(user_to_invite);
     std::map<std::string, class Channel *> list = server->get_channel_list();
-    if (!server->channel_exists(channel)) // check if channel doesn't exist
+    if (!server->channel_exists(channel)) // if channel doesn't exist
     {
-        server->add_to_out_buf(client_to_invite->getFd(),INVITE(client, channel, user_to_invite));
-        server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));
-        if (client_to_invite->get_away() == true)
-        	server->add_to_out_buf(client->getFd(), RPL_AWAY(client_to_invite, client));
-        return;
+		return server->add_to_out_buf(client->getFd(),ERR_NOSUCHCHANNEL(client, channel));
+        // server->add_to_out_buf(client_to_invite->getFd(),INVITE(client, channel, user_to_invite));
+        // server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));
+        // if (client_to_invite->get_away() == true)
+        // 	server->add_to_out_buf(client->getFd(), RPL_AWAY(client_to_invite, client));
+        // return;
     }
-    if (!list.at(channel)->is_member(client->getNick())) //Check if user is member of chan
+    if (!list.at(channel)->is_member(client->getNick())) //if user is member of chan
         return server->add_to_out_buf(client->getFd(), ERR_NOTONCHANNEL(client, channel));
-    if (list.at(channel)->get_flag('i') && !list.at(channel)->is_operator(client->getFd())) //Check if flag +i and user is op in chan
+    if (list.at(channel)->get_flag('i') && !list.at(channel)->is_operator(client->getFd())) //if flag +i and user is op in chan
         return server->add_to_out_buf(client->getFd(), ERR_CHANOPRIVSNEEDED(client, list.at(channel)));
-    if (list.at(channel)->is_member(user_to_invite)) //check if user to be invited is on channel
+    if (list.at(channel)->is_member(user_to_invite)) //if user to be invited is on channel
         return server->add_to_out_buf(client->getFd(), ERR_USERONCHANNEL(client, user_to_invite, list.at(channel)));
     server->add_to_out_buf(client_to_invite->getFd(), INVITE(client, channel, user_to_invite));
     server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));

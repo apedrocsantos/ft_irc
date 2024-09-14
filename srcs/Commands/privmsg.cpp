@@ -13,13 +13,11 @@ void CmdHandler::privmsg(Command *cmd, Client *client, Server *server)
     std::stringstream ss2(str);
     while (std::getline(ss2, str, ',')) // get targets
             targets.push_back(str);
+	ss >> std::ws;
     std::getline(ss, message); // get message to send
-
-	while (message[0] == ' ')
-		message.erase(0, message.size() - 1);
     if (message.empty())
-        return server->add_to_out_buf(client->getFd(), ERR_NOTEXTTOSEND(client));
-	else if (message[0] != ':')
+		return server->add_to_out_buf(client->getFd(), ERR_NOTEXTTOSEND(client));
+	if (message[0] != ':')
 		message.insert(message.begin(), ':');
     while (!targets.empty())
     {
@@ -35,6 +33,7 @@ void CmdHandler::privmsg(Command *cmd, Client *client, Server *server)
                     	server->add_to_out_buf(it_members->second->getFd(), PRIVMSG(client, targets.front(), message));
             }
         }
+		//TODO: not opening new window on client that sends private msg
         else // if target is a user
         {
             Client *c_target = server->get_client(targets.front());

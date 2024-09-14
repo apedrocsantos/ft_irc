@@ -2,11 +2,11 @@
 
 Command::Command(std::string str, Server *server)
 {
-    char *str2;
     std::vector<struct pollfd>::iterator it_pollfd;
-
     std::stringstream ss(str);
     std::string line;
+
+	ss >> std::ws;
     while (std::getline(ss, line, '\r'))
     {
         if (line == "\n")
@@ -23,17 +23,16 @@ Command::Command(std::string str, Server *server)
             ss2 >> word;
         }
         this->_command = word;
-        while (ss2 >> word)
-        {
-            if (this->_params.size())
-                this->_params.append(" ");
-            str2 = &word[0];
-            this->_params.append(str2);
-        }
+		ss2 >> std::ws;
+		if (!std::getline(ss2, word))
+			word.erase();
+		if (word[word.size() - 1] == '\n')
+			word.erase(word.size() - 1, 1);
+		this->_params = word;
         if (!this->_prefix.empty())
             std::cout << "prefix: " << this->_prefix << ", ";
         std::cout << server->it_pollfd->fd << " says: ";
-        std::cout << "command: " << this->_command << ", params: " << this->_params << std::endl;
+        std::cout << "command: {" << this->_command << "}, params: {" << this->_params << "}\n";
         std::map<int, class Client *> client_list = server->get_client_list();
 		if (client_list.find(server->it_pollfd->fd) == client_list.end())
 			return;

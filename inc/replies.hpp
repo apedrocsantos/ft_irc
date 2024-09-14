@@ -99,7 +99,7 @@ std::string ERR_NEEDMOREPARAMS(Command *cmd, Client *client);
 std::string ERR_BADCHANNELKEY(Client *client, Channel *channel);
 std::string ERR_CHANNELISFULL(Client *client, Channel *channel);
 std::string ERR_INVITEONLYCHAN(Client *client, Channel *channel);
-std::string ERR_NOSUCHCHANNEL(Client *client, std::string name);
+std::string ERR_NOSUCHCHANNEL(Client *client, std::string channel);
 std::string ERR_NOTONCHANNEL(Client *client, std::string name);
 std::string ERR_UNKNOWNCOMMAND(Client *client, Command *cmd);
 std::string ERR_CHANOPRIVSNEEDED(Client *client, Channel *channel);
@@ -107,7 +107,7 @@ std::string ERR_USERNOTINCHANNEL(Client *client, std::string nick, Channel *chan
 std::string ERR_USERONCHANNEL(Client *client, std::string nick, Channel *channel);
 std::string ERR_NOSUCHNICK(Client *client, std::string nick);
 std::string ERR_NOTREGISTERED(Client *client);
-std::string ERR_PASSWDMISMATCH(Client *client);
+std::string ERR_PASSWDMISMATCH();
 std::string ERR_UMODEUNKNOWNFLAG(Client *client, char flag);
 std::string ERR_NOTEXTTOSEND(Client *client);
 

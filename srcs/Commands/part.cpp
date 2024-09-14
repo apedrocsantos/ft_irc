@@ -2,7 +2,6 @@
 
 class CmdHandler;
 
-// TODO: Check full message?
 void CmdHandler::part(Command *cmd, Client *client, Server *server)
 {
     std::vector<std::string> names;
@@ -12,8 +11,9 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
     std::string str;
     ss >> str;
     std::stringstream ss2(str);
-    while (std::getline(ss2, str, ',')) // get channels
-        names.push_back(str);
+	while (std::getline(ss2, str, ',')) // get channels
+		names.push_back(str);
+	ss >> std::ws;
     if (std::getline(ss, str)) // get message
 		message = str;
 	if (!message.empty() && message[0] != ':')

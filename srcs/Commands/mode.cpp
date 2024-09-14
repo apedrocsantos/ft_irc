@@ -101,6 +101,11 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
                     server->add_to_out_buf(client->getFd(), ERR_NOSUCHNICK(client, etc.front()));
                     continue; 
                 }
+				if (!channel->is_member(client_to_change->getNick()))
+				{
+					server->add_to_out_buf(client->getFd(), ERR_USERNOTINCHANNEL(client, etc.front(), channel));
+                    continue;
+				}
                 if (cur_mode == true) // +o
                 {
                     if (channel->is_member(etc.front()) && !channel->is_operator(client_to_change->getFd())) // if user to change is member of channel and is not operator
@@ -123,8 +128,8 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
                         strings += etc.front() + " ";
                     }
                 }
-                channel->set_mode(flags[iterator], cur_mode); // set flag mode
-               break; 
+				etc.pop_front();
+            	break;
             }
             case 'l':
             {
@@ -158,7 +163,6 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
                 }
                 else // -l
                 {
-                    channel->set_mode(flags[iterator], cur_mode); // set flag mode
                     if (channel->get_flag('l') != cur_mode)
                     {
                         if (mode != cur_mode)
@@ -171,6 +175,7 @@ void do_modes(std::string &flags, std::string &o_flags, std::string &strings, bo
                         }
                         o_flags += 'l';
                     }
+					channel->set_mode(flags[iterator], cur_mode); // set flag mode
                 }
                 break;
             }
