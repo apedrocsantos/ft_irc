@@ -48,27 +48,26 @@ void CmdHandler::user(Command *cmd, Client *client, Server *server) {
 		}
 	}
 	
+	if (!client->getUsername().empty()) // if the user is already registered
+		return server->add_to_out_buf(client->getFd(), ERR_AlreadyRegistered(client));
+
 	if (paramsArray.empty())
 		return server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
 
 	username = paramsArray[0];
-
-	// if the user is already registered
-	if (!client->getUsername().empty())
-		return server->add_to_out_buf(client->getFd(), ERR_AlreadyRegistered(client));
-
-	// if there are missing parameters
-	if (!hasCorrectParams(params))
+	if (!hasCorrectParams(params))	// if there are missing parameters
 		return server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
 
 	client->setUser(username);
 	client->setReal(paramsArray[3]);
 
-	//User(client);
 	if (!(client->getNick().empty() || client->getUsername().empty() || client->getRealname().empty()))
 	{
-		client->set_registered(true);
-		server->add_to_out_buf(client->getFd(), RPL_WELCOME(client));
+		if (client->get_registered() == false)
+		{
+			client->set_registered(true);
+			server->add_to_out_buf(client->getFd(), RPL_WELCOME(client));
+		}
 	}
 
 }

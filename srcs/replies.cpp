@@ -18,7 +18,7 @@ std::string PONG(Command *cmd) {return ":ircserv PONG " + cmd->get_params() + "\
 
 std::string PART(Client *client, Channel *channel, std::string msg) {return ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " PART " + channel->get_name() + " " + msg + "\r\n";}
 
-std::string KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg) {return ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " KICK " + channel->get_name() + " " + user_to_kick + " :" + msg + "\r\n";}
+std::string KICK(Client *client, Channel *channel, std::string user_to_kick, std::string msg) {return ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " KICK " + channel->get_name() + " " + user_to_kick + " " + msg + "\r\n";}
 
 // dont send to self
 std::string INVITE(Client *client, std::string channel, std::string user_to_invite) {return ":" + client->getNick() + "!~" + client->getUsername() + "@" + client->getHostname() + " INVITE " + user_to_invite + " " + channel + "\r\n";}
@@ -93,3 +93,5 @@ std::string ERR_PASSWDMISMATCH() {return ":ircserv 464 * :Wrong password.\r\n";}
 std::string ERR_UMODEUNKNOWNFLAG(Client *client, char flag) {return ":ircserv 501 " + client->getNick() + " :Unknown " + flag + " flag.\r\n";}
 
 std::string ERR_NOTEXTTOSEND(Client *client) {return ":ircserv 412 " + client->getNick() + " :No text to send\r\n";}
+
+std::string ERR_NORECIPIENT(Client *client, Command *cmd) {return ":ircserv 411 " + client->getNick() + " :No recipient given (" + cmd->get_command() + ")\r\n";}

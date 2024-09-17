@@ -5,10 +5,12 @@ class CmdHandler;
 void CmdHandler::part(Command *cmd, Client *client, Server *server)
 {
     std::vector<std::string> names;
+    std::string str;
     std::string message = "ircserv";
 
+	if (cmd->get_params().empty())
+		return server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
     std::stringstream ss(cmd->get_params());
-    std::string str;
     ss >> str;
     std::stringstream ss2(str);
 	while (std::getline(ss2, str, ',')) // get channels
@@ -21,7 +23,7 @@ void CmdHandler::part(Command *cmd, Client *client, Server *server)
     std::map<std::string, class Channel *> list = server->get_channel_list();
     for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
     {
-        if (list.find(*it) == list.end()) // check if channel exists
+        if (list.find(*it) == list.end()) // check if channel doesn't exist
             return server->add_to_out_buf(client->getFd(), ERR_NOSUCHCHANNEL(client, *it));
         if (list.at(*it)->member_exists(client->getNick())) // check if user is member of channel
         {

@@ -11,20 +11,18 @@ void CmdHandler::kick(Command *cmd, Client *client, Server *server)
     std::vector<std::string> users_to_kick;
 
     std::stringstream ss(cmd->get_params());
-    std::getline(ss, str, ' '); // get channel
-    channel = str;
+    std::getline(ss, channel, ' '); // get channel
     std::getline(ss, str, ' ');
     std::stringstream ss2(str);
     while (std::getline(ss2, user, ',')) // get users
         users_to_kick.push_back(user);
-    if (users_to_kick.empty())
+    if (users_to_kick.empty()) // if no users
         return server->add_to_out_buf(client->getFd(), ERR_NEEDMOREPARAMS(cmd, client));
     std::getline(ss, message); // get message
 	if (!message.empty() && message[0] != ':')
 		message.insert(message.begin(), ':');
     for (std::vector<std::string>::iterator it_user = users_to_kick.begin(); it_user != users_to_kick.end(); it_user++)
     {
-        Client *client_to_kick = server->get_client(*it_user);
         std::map<std::string, class Channel *> list = server->get_channel_list();
         if (list.find(channel) == list.end()) // check if channel exists
             return server->add_to_out_buf(client->getFd(), ERR_NOSUCHCHANNEL(client, channel));
@@ -44,6 +42,7 @@ void CmdHandler::kick(Command *cmd, Client *client, Server *server)
             continue ;
         }
         // kick user and send msg to all members of channel
+		Client *client_to_kick = server->get_client(*it_user);
         for (std::list<std::pair<std::string*, class Client *> >::iterator it_members = list[channel]->get_members_begin(); it_members != list[channel]->get_members_end(); it_members++)
             server->add_to_out_buf(it_members->second->getFd(), KICK(client, list.at(channel), *it_user, message));
         client_to_kick->remove_channel(channel); // remove channel from client's list

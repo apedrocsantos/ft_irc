@@ -110,5 +110,6 @@ std::string ERR_NOTREGISTERED(Client *client);
 std::string ERR_PASSWDMISMATCH();
 std::string ERR_UMODEUNKNOWNFLAG(Client *client, char flag);
 std::string ERR_NOTEXTTOSEND(Client *client);
+std::string ERR_NORECIPIENT(Client *client, Command *cmd);
 
 #endif

@@ -39,7 +39,7 @@ class Channel {
     void set_operator(int fd) {_operators.push_back(fd);}
     void set_topic(std::string topic) {this->_topic = topic;}
     void set_mode(char key, bool value) {if (_flags.find(key) == _flags.end()) return ; _flags.at(key) = value;}
-    void set_limit(std::string str) {int nb; std::stringstream ss; ss << str; ss >> nb; if (nb <= 0) {_flags['l'] = false; return;} _user_limit = nb;}
+    void set_limit(int nb) {if (nb <= 0) {_flags['l'] = false; return;} _user_limit = nb;}
     
     void remove_member(std::string name);
     void remove_operator(int fd);

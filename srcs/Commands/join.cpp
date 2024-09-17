@@ -8,6 +8,8 @@ void CmdHandler::join(Command *cmd, Client *client, Server *server)
     std::vector<std::string> names;
     std::vector<std::string> passwords;
 
+	if (cmd->get_params().empty())
+		server->add_to_out_buf(client->getFd(),ERR_NEEDMOREPARAMS(cmd, client));
     std::stringstream ss(cmd->get_params());
     std::string str;
     ss >> str;
