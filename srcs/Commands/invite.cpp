@@ -17,14 +17,7 @@ void CmdHandler::invite(Command *cmd, Client *client, Server *server)
     Client *client_to_invite = server->get_client(user_to_invite);
     std::map<std::string, class Channel *> list = server->get_channel_list();
     if (!server->channel_exists(channel)) // if channel doesn't exist
-    {
-		return server->add_to_out_buf(client->getFd(),ERR_NOSUCHCHANNEL(client, channel));
-        // server->add_to_out_buf(client_to_invite->getFd(),INVITE(client, channel, user_to_invite));
-        // server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));
-        // if (client_to_invite->get_away() == true)
-        // 	server->add_to_out_buf(client->getFd(), RPL_AWAY(client_to_invite, client));
-        // return;
-    }
+		return server->add_to_out_buf(client->getFd(),ERR_NOSUCHCHANNEL(client, channel)); // only allow invite if channel exists
     if (!list.at(channel)->is_member(client->getNick())) //if user is not member of chan
         return server->add_to_out_buf(client->getFd(), ERR_NOTONCHANNEL(client, channel));
     if (list.at(channel)->get_flag('i') && !list.at(channel)->is_operator(client->getFd())) //if flag +i and user is not op in chan

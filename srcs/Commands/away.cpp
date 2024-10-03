@@ -11,8 +11,8 @@ void CmdHandler::away(Command *cmd, Client *client, Server *server)
     }
     client->set_away(true); // if away msg exists
 	std::string message = cmd->get_params();
-	if (!message.empty() && message[0] != ':')
-		message.insert(message.begin(), ':');
+	if (!message.empty() && message[0] == ':')
+		message.erase(0, 1);
     client->set_away_msg(message);
     server->add_to_out_buf(client->getFd(), RPL_NOAWAY(client));
 }

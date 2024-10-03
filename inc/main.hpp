@@ -26,7 +26,6 @@
 #include <poll.h>
 #include <errno.h>
 
-#include "lists.hpp"
 #include "colors.hpp"
 #include "Client.hpp"
 #include "Command.hpp"

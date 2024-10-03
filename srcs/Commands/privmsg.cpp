@@ -35,7 +35,6 @@ void CmdHandler::privmsg(Command *cmd, Client *client, Server *server)
                     	server->add_to_out_buf(it_members->second->getFd(), PRIVMSG(client, targets.front(), message));
             }
         }
-		//TODO: not opening new window on client that sends private msg
         else // if target is a user
         {
             Client *cl_target = server->get_client(targets.front());

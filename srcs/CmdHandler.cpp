@@ -58,6 +58,10 @@ void CmdHandler::quit(Command *cmd, Client *client, Server *server)
 {
     std::string message = "Client Quit";
     if (!cmd->get_params().empty())
+	{
         message = cmd->get_params();
+		if (message[0] == ':')
+			message.erase(0, 1);
+	}
     server->remove_client(client->getFd(), message);
 }

@@ -1,6 +1,8 @@
 #include "../inc/main.hpp"
 #include <sys/socket.h>
 
+//TODO: Comments; re-read stuff; 
+
 Server::Server(char *port, std::string pwd) : _name("ircserv"), command("", this)
 {
     int optval = 1;
@@ -48,17 +50,17 @@ Server::Server(char *port, std::string pwd) : _name("ircserv"), command("", this
     std::cout << "Setup ok\n";
     std::cout << "Server running on port " << this->port << std::endl;
 }
-//TODO: delete hanging msgs
 Server::~Server() {
 	std::cout << "Closing server\n";
-	for (std::map<int, char *>::iterator it = in_buf.begin(); it != in_buf.end(); it++) // delete hanging messages
+	for (std::map<int, char *>::iterator it = in_buf.begin(); it != in_buf.end(); ) // delete hanging messages
 	{
 		std::map<int, char *>::iterator next = it;
-		if (++next == in_buf.end())
-			break;
+		++next;
 		delete[] it->second;
         in_buf.erase(it);
 		it = next;
+		if (it == in_buf.end())
+			break;
 	}
     for (it_pollfd = this->pollfds.begin(); it_pollfd != this->pollfds.end(); it_pollfd++) // close all fds
         close(it_pollfd->fd);
@@ -66,9 +68,7 @@ Server::~Server() {
     for (it_map = this->client_list.begin(); it_map != this->client_list.end(); it_map++) // delete all clients
         delete (it_map->second);
     for (it_channel_list = this->channel_list.begin(); it_channel_list != this->channel_list.end(); it_channel_list++) // delete all channels
-	{
         delete(it_channel_list->second);
-	}
 }
 
 void Server::start()
@@ -180,10 +180,7 @@ void Server::receive_msg()
         return ;
     }
     str = in_buf[it_pollfd->fd];
-	for (int i = 0; i < (int)str.length(); i++)
-		std::cout << (int) str[i] << " ";
-	std::cout << std::endl;
-    if (msg_size && (int)str.find("\r\n") != -1) // if there's a message and a \n, execute command
+    if (msg_size && (int)str.find("\n") != -1) // if there's a message and a \n, execute command
         command = Command(str, this);
 }
 
@@ -192,9 +189,9 @@ void Server::send_msg()
     int msg_size;
     std::string str;
 
-	if (client_list.find(it_pollfd->fd) == client_list.end())
+	if (client_list.find(it_pollfd->fd) == client_list.end()) // if no client found
 		return;
-    if (out_buf.find(it_pollfd->fd) == out_buf.end()) // Nothing to send
+    if (out_buf.find(it_pollfd->fd) == out_buf.end()) // if nothing to send
 		return;
     str = out_buf[it_pollfd->fd];
     msg_size = send(it_pollfd->fd, str.c_str(), str.size(), 0);

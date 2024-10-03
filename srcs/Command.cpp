@@ -17,18 +17,18 @@ Command::Command(std::string str, Server *server)
         std::stringstream ss2(line);
         std::string word;
         ss2 >> word;
-        if (word[0] == ':')
+        if (word[0] == ':') // get prefix
         {
             this->_prefix = word.erase(0,1);
             ss2 >> word;
         }
-        this->_command = word;
+        this->_command = word; // get command
 		ss2 >> std::ws;
 		if (!std::getline(ss2, word))
 			word.erase();
 		if (word[word.size() - 1] == '\n')
 			word.erase(word.size() - 1, 1);
-		this->_params = word;
+		this->_params = word; // get parameters
         if (!this->_prefix.empty())
             std::cout << "prefix: " << this->_prefix << ", ";
         std::cout << server->it_pollfd->fd << " says: ";
@@ -36,7 +36,7 @@ Command::Command(std::string str, Server *server)
         std::map<int, class Client *> client_list = server->get_client_list();
 		if (client_list.find(server->it_pollfd->fd) == client_list.end())
 			return;
-        CmdHandler cl(this, client_list[server->it_pollfd->fd], server);
+        CmdHandler cl(this, client_list[server->it_pollfd->fd], server); // execute command
         std::map<int, char *> &in_buf = server->get_buf();
         delete[] in_buf[server->it_pollfd->fd];
         in_buf.erase(server->it_pollfd->fd);
