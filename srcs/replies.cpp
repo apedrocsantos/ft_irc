@@ -18,7 +18,7 @@ std::string ERROR(std::string msg) {return "ERROR: " + msg + "\r\n";}
 /////////////////////////////////////// REPLIES
 
 std::string RPL_WELCOME(Client *client) {return ":ircserv 001 " + client->getNick() + " :Welcome to ircserv, " + client->getUsername() + "\r\n";}
-std::string RPL_AWAY(Client *client, Client *dest) {return ":ircserv 301 " + client->getNick() + " " + dest->getNick() + " :" + client->get_away_msg() + "\r\n";}
+std::string RPL_AWAY(Client *client, Client *dest) {return ":ircserv 301 " + client->getNick() + " " + dest->getNick() + " :" + dest->get_away_msg() + "\r\n";}
 std::string RPL_UNAWAY(Client *client) {return ":ircserv 305 " + client->getNick() + " :You are no longer marked as being away\r\n";}
 std::string RPL_NOAWAY(Client *client) {return ":ircserv 306 " + client->getNick() + " :You have been marked as being away\r\n";}
 std::string RPL_CHANNELMODEIS(Client *client, Channel *channel) {return ":ircserv 324 " + client->getNick() + " " + channel->get_name() + " " + channel->get_modes() + "\r\n";}

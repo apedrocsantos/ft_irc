@@ -1,8 +1,6 @@
 #include "../inc/main.hpp"
 #include <sys/socket.h>
 
-//TODO: re-read stuff; 
-
 Server::Server(char *port, std::string pwd) : _name("ircserv"), command("", this)
 {
     int optval = 1;

@@ -27,6 +27,6 @@ void CmdHandler::invite(Command *cmd, Client *client, Server *server)
     server->add_to_out_buf(client_to_invite->getFd(), INVITE(client, channel, user_to_invite));
     server->add_to_out_buf(client->getFd(), RPL_INVITING(client, user_to_invite, channel));
     if (client_to_invite->get_away() == true)
-        server->add_to_out_buf(client->getFd(), RPL_AWAY(client_to_invite, client));
+        server->add_to_out_buf(client->getFd(), RPL_AWAY(client, client_to_invite));
     list.at(channel)->add_to_invited(client_to_invite->getFd());
 }

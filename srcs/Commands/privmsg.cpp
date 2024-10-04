@@ -44,7 +44,7 @@ void CmdHandler::privmsg(Command *cmd, Client *client, Server *server)
 			{
                 server->add_to_out_buf(cl_target->getFd(), PRIVMSG(client, targets.front(), message));
 				if (cl_target->get_away() == true)
-        			server->add_to_out_buf(client->getFd(), RPL_AWAY(cl_target, client));
+        			server->add_to_out_buf(client->getFd(), RPL_AWAY(client, cl_target));
 			}
         }
         targets.pop_front();
