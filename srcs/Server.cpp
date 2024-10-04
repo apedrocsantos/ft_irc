@@ -1,7 +1,7 @@
 #include "../inc/main.hpp"
 #include <sys/socket.h>
 
-//TODO: Comments; re-read stuff; 
+//TODO: re-read stuff; 
 
 Server::Server(char *port, std::string pwd) : _name("ircserv"), command("", this)
 {
